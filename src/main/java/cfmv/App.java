@@ -6,14 +6,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bytecode.opencsv.CSVReader;
+import clustering.Cluster;
+import clustering.Point;
+import kmeans.KMeans;
 
 public class App {
 
 	public static void main(String[] args) {
-		String dataSet = "src/main/resources/data.csv";
+		String dataSet = "src/main/resources/data-1.csv";
 
 		try {
 			List<Point> puntos = processData(dataSet);
+			KMeans kMeans = new KMeans(puntos);
+			List<Cluster> clusters = kMeans.run(3);
+			for (int i = 0; i < clusters.size(); i++) {
+				System.out.println("Cluster " + i + ":");
+				clusters.get(i).toString();
+			}
 
 		} catch (IOException e) {
 			System.out
@@ -38,7 +47,7 @@ public class App {
 		List<Point> points; // List with Point objetcs obtained after parsing
 		String[] point; // Array of strings with the features of a point
 		long num = 0; // Number of points processed
-		final char SEPARATOR = ';'; // Separator of the values of the CSV file
+		final char SEPARATOR = ','; // Separator of the values of the CSV file
 		final char ESCAPE_CHAR = '"'; // Escape character in the CSV file
 		final int FIRST_LINE = 1; // First line to read (starting from 0)
 
@@ -49,13 +58,13 @@ public class App {
 
 		// Parse CSV dataset
 		while ((point = reader.readNext()) != null) {
-			int[] features = new int[point.length];
+			float[] features = new float[point.length];
 			for (int i = 0; i < point.length; i++) {
 				if (point[i].equals("")) {
 					System.out.println("Missed value!");
 					features[i] = 0;
 				} else {
-					features[i] = Integer.parseInt(point[i]);
+					features[i] = Float.parseFloat(point[i]);
 				}
 			}
 			Point p = new Point(num, features);
