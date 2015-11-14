@@ -62,7 +62,18 @@ public class Point {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		Point other = (Point) obj;
+		for (int i = 0; i < features.length; i++) {
+			if (features[i] != other.getFeature(i)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@Override
 	public String toString() {
-		return "#" + id + ": " + Arrays.toString(features);
+		return "#" + id + ":\t" + Arrays.toString(features);
 	}
 }

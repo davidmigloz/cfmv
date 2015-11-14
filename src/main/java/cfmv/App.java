@@ -5,25 +5,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import au.com.bytecode.opencsv.CSVReader;
 import clustering.Cluster;
 import clustering.Point;
 import kmeans.KMeans;
 
 public class App {
+	
+	/** Logger */
+	private static final Logger logger = LoggerFactory
+			.getLogger(App.class);
 
 	public static void main(String[] args) {
 		String dataSet = "src/main/resources/data-1.csv";
 
 		try {
-			List<Point> puntos = processData(dataSet);
-			KMeans kMeans = new KMeans(puntos);
+			// Process data set
+			List<Point> points = processData(dataSet);
+			
+			// Clusterize data
+			KMeans kMeans = new KMeans(points);
 			List<Cluster> clusters = kMeans.run(3);
-			for (int i = 0; i < clusters.size(); i++) {
-				System.out.println("Cluster " + i + ":");
-				clusters.get(i).toString();
-			}
-
+			
+			System.out.println("FIN");
 		} catch (IOException e) {
 			System.out
 					.println("Error at processing data set. " + e.getMessage());
@@ -72,6 +79,12 @@ public class App {
 			num++;
 		}
 		reader.close();
+		
+		logger.debug("Data set processed");
+		for(Point p : points){
+			logger.debug(p.toString());
+		}
+		
 		return points;
 	}
 }

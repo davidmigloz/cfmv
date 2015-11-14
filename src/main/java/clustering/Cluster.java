@@ -3,19 +3,21 @@ package clustering;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import kmeans.KMeans;
+
 public class Cluster {
-	/**
-	 * Points belonging to the cluster
-	 */
+	/** Points belonging to the cluster */
 	private List<Point> points;
-	/**
-	 * Centroid point of the cluster
-	 */
+	/** Centroid point of the cluster */
 	private Point centroid;
-	/**
-	 * Processing status
-	 */
+	/** Processing status */
 	private boolean completed;
+	
+	/** Logger */
+	private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
 	public Cluster(Point centroid) {
 		this.centroid = centroid;
@@ -66,7 +68,8 @@ public class Cluster {
 	}
 
 	/**
-	 * Set processing status 
+	 * Set processing status
+	 * 
 	 * @param status
 	 */
 	public void setCompleted(boolean status) {
@@ -110,9 +113,13 @@ public class Cluster {
 
 	@Override
 	public String toString() {
-		String str = "Centroid: " + this.getCentroid() + "\n";
-		for (Point p : this.getPoints()) {
-			str += p.toString() + "\n";
+		String str = "Centroid: " + this.getCentroid().toString() + "\n";
+		if (this.points != null) {
+			for (Point p : this.getPoints()) {
+				str += p.toString() + "\n";
+			}
+		} else {
+			str += "Empty";
 		}
 		return str;
 	}

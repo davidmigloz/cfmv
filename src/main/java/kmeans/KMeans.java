@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import clustering.Cluster;
 import clustering.Point;
 
@@ -15,6 +18,9 @@ public class KMeans {
 	int k;
 	List<Point> points;
 	int nFeatures;
+
+	/** Logger */
+	private static final Logger logger = LoggerFactory.getLogger(KMeans.class);
 
 	public KMeans(List<Point> points) {
 		this.points = points;
@@ -30,12 +36,22 @@ public class KMeans {
 	 */
 	public List<Cluster> run(int k) {
 		this.k = k;
+		logger.info("Running k-means k=" + k);
+
 		List<Cluster> clusters = chooseCentroids();
 
 		while (!isFinished(clusters)) {
+			logger.info("Not finish");
 			cleanClusters(clusters);
 			assignPoints(clusters);
 			recalculateCentroids(clusters);
+		}
+
+		logger.info("K-means executions finished!");
+		logger.info("Final clusters:");
+		for (int i = 0; i < clusters.size(); i++) {
+			logger.info("Cluster " + i + ":");
+			logger.info(clusters.get(i).toString());
 		}
 		return clusters;
 	}
@@ -49,21 +65,21 @@ public class KMeans {
 	private List<Cluster> chooseCentroids() {
 		List<Cluster> centroids = new ArrayList<Cluster>();
 
-		List<Float> highest = new ArrayList<Float>();
-		List<Float> lowests = new ArrayList<Float>();
+		float[] highest = new float[nFeatures];
+		float[] lowests = new float[nFeatures];
 
 		// Get the max. and min. value of each feature
 		for (int i = 0; i < nFeatures; i++) {
-			Float min = Float.POSITIVE_INFINITY;
-			Float max = Float.NEGATIVE_INFINITY;
+			float min = Float.POSITIVE_INFINITY;
+			float max = Float.NEGATIVE_INFINITY;
 			for (Point p : points) {
 				float feature = p.getFeature(i);
 				min = min > feature ? feature : min;
 				max = max < feature ? feature : max;
 			}
-			highest.add(max);
-			lowests.add(min);
-		}
+			highest[i] = max;
+			lowests[i] = min;
+		}	
 
 		// Get k random centroids with random features between min. and max.
 		// values of each features
@@ -72,12 +88,18 @@ public class KMeans {
 			float[] features = new float[nFeatures];
 			for (int f = 0; f < nFeatures; f++) {
 				features[f] = random.nextFloat()
-						* (highest.get(f) - lowests.get(f)) + lowests.get(f);
+						* (highest[f] - lowests[f]) + lowests[f];
 			}
 			Point centroid = new Point(Long.MAX_VALUE, features);
 			Cluster c = new Cluster(centroid);
 			centroids.add(c);
 		}
+		
+		logger.debug("Initial centroids:");
+		for(Cluster c : centroids){
+			logger.debug(c.toString());
+		}		
+		
 		return centroids;
 	}
 
@@ -105,6 +127,7 @@ public class KMeans {
 		for (Cluster c : clusters) {
 			c.cleanPoints();
 		}
+		logger.debug("Clusters cleaned");
 	}
 
 	/**
@@ -127,6 +150,11 @@ public class KMeans {
 			}
 			closest.addPoint(p);
 		}
+		
+		logger.debug("Points assigned");
+		for(Cluster c : clusters){
+			logger.debug(c.toString());
+		}
 	}
 
 	/**
@@ -136,10 +164,13 @@ public class KMeans {
 	 * @param clusters
 	 */
 	private void recalculateCentroids(List<Cluster> clusters) {
+		logger.debug("New centroids:");
+		
 		for (Cluster c : clusters) {
-			// Is the cluster has no points, we are finished with it
+			// Is the cluster has no points, the centroid is the same
 			if (c.isEmpty()) {
 				c.setCompleted(true);
+				logger.debug("The same (empty)");
 				continue;
 			}
 
@@ -159,8 +190,10 @@ public class KMeans {
 			// finished with this cluster. If not, the new centroid is setted
 			if (newCentroid.equals(c.getCentroid())) {
 				c.setCompleted(true);
+				logger.debug("The same");
 			} else {
 				c.setCentroid(newCentroid);
+				logger.debug(newCentroid.toString());
 			}
 		}
 	}
