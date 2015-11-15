@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import clustering.Cluster;
+import clustering.DataSet;
 import clustering.Point;
 
 /**
@@ -16,15 +17,13 @@ import clustering.Point;
  */
 public class KMeans {
 	int k;
-	List<Point> points;
-	int nFeatures;
+	DataSet ds;
 
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(KMeans.class);
 
-	public KMeans(List<Point> points) {
-		this.points = points;
-		nFeatures = points.get(0).nFeatures();
+	public KMeans(DataSet ds) {
+		this.ds = ds;
 	}
 
 	/**
@@ -41,17 +40,22 @@ public class KMeans {
 		List<Cluster> clusters = chooseCentroids();
 
 		while (!isFinished(clusters)) {
-			logger.info("Not finish");
+			logger.debug("Not finish");
 			cleanClusters(clusters);
 			assignPoints(clusters);
 			recalculateCentroids(clusters);
+			
+			//logger.info("Centroids:");
+			//for(Cluster c : clusters){
+			//	logger.info(c.getCentroid().toString());
+			//}
 		}
 
 		logger.info("K-means executions finished!");
-		logger.info("Final clusters:");
+		logger.debug("Final clusters:");
 		for (int i = 0; i < clusters.size(); i++) {
-			logger.info("Cluster " + i + ":");
-			logger.info(clusters.get(i).toString());
+			logger.debug("Cluster " + i + ":");
+			logger.debug(clusters.get(i).toString());
 		}
 		return clusters;
 	}
@@ -65,14 +69,14 @@ public class KMeans {
 	private List<Cluster> chooseCentroids() {
 		List<Cluster> centroids = new ArrayList<Cluster>();
 
-		float[] highest = new float[nFeatures];
-		float[] lowests = new float[nFeatures];
+		float[] highest = new float[ds.nFeatures()];
+		float[] lowests = new float[ds.nFeatures()];
 
 		// Get the max. and min. value of each feature
-		for (int i = 0; i < nFeatures; i++) {
+		for (int i = 0; i < ds.nFeatures(); i++) {
 			float min = Float.POSITIVE_INFINITY;
 			float max = Float.NEGATIVE_INFINITY;
-			for (Point p : points) {
+			for (Point p : ds.getPoints()) {
 				float feature = p.getFeature(i);
 				min = min > feature ? feature : min;
 				max = max < feature ? feature : max;
@@ -85,8 +89,8 @@ public class KMeans {
 		// values of each features
 		Random random = new Random();
 		for (int i = 0; i < k; i++) {
-			float[] features = new float[nFeatures];
-			for (int f = 0; f < nFeatures; f++) {
+			float[] features = new float[ds.nFeatures()];
+			for (int f = 0; f < ds.nFeatures(); f++) {
 				features[f] = random.nextFloat()
 						* (highest[f] - lowests[f]) + lowests[f];
 			}
@@ -137,7 +141,7 @@ public class KMeans {
 	 */
 	private void assignPoints(List<Cluster> clusters) {
 		// Get the closest cluster for each point
-		for (Point p : points) {
+		for (Point p : ds.getPoints()) {
 			Cluster closest = clusters.get(0);
 			Double minimumDistance = Double.MAX_VALUE;
 			for (Cluster c : clusters) {
@@ -175,10 +179,10 @@ public class KMeans {
 			}
 
 			// Calculate mean value of each feature
-			float[] meanFeatures = new float[nFeatures];
+			float[] meanFeatures = new float[ds.nFeatures()];
 			Arrays.fill(meanFeatures, 0F);
 			for (Point p : c.getPoints()) {
-				for (int f = 0; f < nFeatures; f++) {
+				for (int f = 0; f < ds.nFeatures(); f++) {
 					meanFeatures[f] += ((p.getFeature(f) - meanFeatures[f])
 							/ c.nPoints());
 				}

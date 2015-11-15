@@ -3,11 +3,6 @@ package clustering;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import kmeans.KMeans;
-
 public class Cluster {
 	/** Points belonging to the cluster */
 	private List<Point> points;
@@ -15,13 +10,11 @@ public class Cluster {
 	private Point centroid;
 	/** Processing status */
 	private boolean completed;
-	
-	/** Logger */
-	private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
 	public Cluster(Point centroid) {
 		this.centroid = centroid;
 		completed = false;
+		points = new ArrayList<Point>();
 	}
 
 	/**
@@ -54,9 +47,6 @@ public class Cluster {
 	 *            point
 	 */
 	public void addPoint(Point p) {
-		if (this.points == null) {
-			points = new ArrayList<Point>();
-		}
 		this.points.add(p);
 	}
 
@@ -94,9 +84,7 @@ public class Cluster {
 	 * Remove all the points the cluster has.
 	 */
 	public void cleanPoints() {
-		if (this.points != null) {
-			points.clear();
-		}
+		points.clear();
 	}
 
 	/**
