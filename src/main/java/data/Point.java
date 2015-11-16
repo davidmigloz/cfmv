@@ -1,13 +1,21 @@
 package data;
 
 import java.util.Arrays;
+import java.util.Set;
 
 public class Point {
 	/** Array with the values of the features of the point */
 	private float[] features;
 
+	/** List of features that contain missed values */
+	private Set<Integer> missedFeatures;
+
 	public Point(float[] features) {
 		this.features = features;
+	}
+
+	public Point(float[] features, Set<Integer> missedFeatures) {
+		this.missedFeatures = missedFeatures;
 	}
 
 	/**
@@ -34,6 +42,24 @@ public class Point {
 	 */
 	public float getFeature(int i) {
 		return features[i];
+	}
+
+	/**
+	 * @return a map with the missed features
+	 */
+	public Set<Integer> getMissedFeatures(){
+		return this.missedFeatures;
+	}
+	
+	/**
+	 * Return if the feateure f of the point has a value or not.
+	 * 
+	 * @param f
+	 *            feature
+	 * @return true if missed value false if not
+	 */
+	public boolean isMissedFeature(int f) {
+		return missedFeatures == null ? false : missedFeatures.contains(f);
 	}
 
 	/**
@@ -64,8 +90,10 @@ public class Point {
 	/**
 	 * Determines if two points are the same (with a certein tolerance).
 	 * 
-	 * @param ds data set
-	 * @param other point to compare
+	 * @param ds
+	 *            data set
+	 * @param other
+	 *            point to compare
 	 * @return
 	 */
 	public boolean equals(DataSet ds, Point other) {

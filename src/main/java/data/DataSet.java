@@ -6,7 +6,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +20,10 @@ public class DataSet {
 	private List<Point> points;
 	/** Mean of the data set */
 	private float[] mean;
-	/** Standard deviation of the data set*/
+	/** Standard deviation of the data set */
 	private float[] standardDeviation;
 	/** Array to indicate which features have missed values */
-	private boolean[] missedValues;
+	private boolean[] incompleteFeature;
 
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
@@ -44,11 +46,10 @@ public class DataSet {
 	public int nFeatures() {
 		return mean.length;
 	}
-	
-	public boolean hasMissedValues(int i){
-		return missedValues[i];
+
+	public boolean hasMissedValues(int i) {
+		return incompleteFeature[i];
 	}
-	
 
 	/**
 	 * Parses the data set and creates Point objetcs with the features given.
@@ -77,23 +78,30 @@ public class DataSet {
 		sum = new float[point.length];
 		mean = new float[point.length];
 		standardDeviation = new float[point.length];
-		missedValues = new boolean[point.length];
+		incompleteFeature = new boolean[point.length];
 		Arrays.fill(sum, 0F);
-		Arrays.fill(missedValues, false);
+		Arrays.fill(incompleteFeature, false);
 
 		// Parse CSV dataset
 		while ((point = reader.readNext()) != null) {
 			float[] features = new float[point.length];
-			for (int i = 0; i < point.length; i++) {
-				if (point[i].equals("")) {
-					missedValues[i] = true;
-					features[i] = 0;
+			Set<Integer> missedFeatures = new HashSet<Integer>(
+					point.length / 2);
+
+			// Process each feature of the point
+			for (int f = 0; f < point.length; f++) {
+				if (point[f].equals("")) { // Missed value
+					incompleteFeature[f] = true;
+					missedFeatures.add(f);
+					features[f] = 0;
 				} else {
-					features[i] = Float.parseFloat(point[i]);
-					sum[i] += features[i];
+					features[f] = Float.parseFloat(point[f]);
+					sum[f] += features[f];
 				}
 			}
-			Point p = new Point(features);
+
+			Point p = missedFeatures.isEmpty() ? new Point(features)
+					: new Point(features, missedFeatures);
 			points.add(p);
 			num++;
 		}
@@ -120,7 +128,8 @@ public class DataSet {
 		logger.debug("Mean:\n" + Arrays.toString(mean));
 		logger.debug(
 				"Standar deviation:\n" + Arrays.toString(standardDeviation));
-		logger.debug("Features with missed values\n"+ Arrays.toString(missedValues));
+		logger.debug("Features with missed values\n"
+				+ Arrays.toString(incompleteFeature));
 		for (Point p : points) {
 			logger.debug(p.toString());
 		}
@@ -144,10 +153,15 @@ public class DataSet {
 		}
 	}
 
+	/**
+	 * Destandarize the values of the features of all points. That is making the
+	 * valuess of each feature in the data have mean μ and a standardDeviation σ.
+	 */
 	public void destandarizePoints() {
 		for (Point p : points) {
 			float[] features = p.getFeatures();
 			for (int i = 0; i < features.length; i++) {
+				// Round to 6 decimal places to remove truncation errors
 				features[i] = round(
 						mean[i] + features[i] * standardDeviation[i], 6);
 			}

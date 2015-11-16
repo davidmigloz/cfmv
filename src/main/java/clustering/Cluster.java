@@ -1,7 +1,9 @@
 package clustering;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import data.DataSet;
 import data.Point;
@@ -12,14 +14,21 @@ public class Cluster {
 	private List<Point> points;
 	/** Centroid point of the cluster */
 	private Point centroid;
-	/** Processing status */
+	/**
+	 * If the centroid is the same in two consecutive iterations of k-means the
+	 * status of the cluster changes to completed.
+	 */
 	private boolean completed;
+
+	/** List of features that contain missed values in the cluster */
+	private Set<Integer> missedFeatures;
 
 	public Cluster(DataSet ds, Point centroid) {
 		this.ds = ds;
+		points = new ArrayList<Point>();
 		this.centroid = centroid;
 		completed = false;
-		points = new ArrayList<Point>();
+		missedFeatures = new HashSet<Integer>();
 	}
 
 	/**
@@ -56,7 +65,17 @@ public class Cluster {
 	}
 
 	/**
-	 * @return true is the cluster is fully processed
+	 * Register a feature as having misssed valures.
+	 * 
+	 * @param missedFeature
+	 */
+	public void addMissedFeatures(Set<Integer> missedFeatures) {
+		this.missedFeatures.addAll(missedFeatures);
+	}
+
+	/**
+	 * @return true is the cluster is fully processed (the centroid doesn't
+	 *         change)
 	 */
 	public boolean isCompleted() {
 		return completed;
@@ -86,10 +105,11 @@ public class Cluster {
 	}
 
 	/**
-	 * Remove all the points the cluster has.
+	 * Remove all the points and missed features the cluster has.
 	 */
 	public void cleanPoints() {
 		points.clear();
+		missedFeatures.clear();
 	}
 
 	/**

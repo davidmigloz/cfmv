@@ -149,6 +149,7 @@ public class KMeans {
 				}
 			}
 			closest.addPoint(p);
+			closest.addMissedFeatures(p.getMissedFeatures());
 		}
 
 		logger.debug("Points assigned");
