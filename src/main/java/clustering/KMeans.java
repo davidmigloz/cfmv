@@ -67,7 +67,7 @@ public class KMeans {
 				float min = Float.POSITIVE_INFINITY;
 				float max = Float.NEGATIVE_INFINITY;
 				for (Point p : ds.getPoints()) {
-					float feature = p.getFeature(i);
+					float feature = p.getValue(i);
 					min = min > feature ? feature : min;
 					max = max < feature ? feature : max;
 				}
@@ -148,8 +148,10 @@ public class KMeans {
 					closest = c;
 				}
 			}
-			closest.addPoint(p);
-			closest.addMissedFeatures(p.getMissedFeatures());
+			// Add point to the closest cluster
+			closest.addPoint(p); 
+			// Register in the cluster if the point has features with missed values
+			closest.addMissedFeatures(p.getMissedFeatures()); 
 		}
 
 		logger.debug("Points assigned");
@@ -181,7 +183,7 @@ public class KMeans {
 			for (Point p : c.getPoints()) {
 				for (int f = 0; f < ds.nFeatures(); f++) {
 					if (!ds.hasMissedValues(f)) {
-						meanFeatures[f] += ((p.getFeature(f) - meanFeatures[f])
+						meanFeatures[f] += ((p.getValue(f) - meanFeatures[f])
 								/ c.nPoints());
 					}
 				}

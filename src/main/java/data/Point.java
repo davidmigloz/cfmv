@@ -5,52 +5,63 @@ import java.util.Set;
 
 public class Point {
 	/** Array with the values of the features of the point */
-	private float[] features;
+	private float[] values;
 
 	/** List of features that contain missed values */
 	private Set<Integer> missedFeatures;
 
-	public Point(float[] features) {
-		this.features = features;
+	public Point(float[] values) {
+		this.values = values;
 	}
 
-	public Point(float[] features, Set<Integer> missedFeatures) {
+	public Point(float[] values, Set<Integer> missedFeatures) {
+		this.values = values;
 		this.missedFeatures = missedFeatures;
 	}
 
 	/**
-	 * @return array with all the values of the features of the point
-	 */
-	public float[] getFeatures() {
-		return features;
-	}
-
-	/**
-	 * Set all the features
-	 * 
-	 * @param features
-	 *            array of features
-	 */
-	public void setFeatures(float[] features) {
-		this.features = features;
-	}
-
-	/**
-	 * @param i
+	 * @param feaure
 	 *            position of the feature (starting from 0)
 	 * @return value of the feature
 	 */
-	public float getFeature(int i) {
-		return features[i];
+	public float getValue(int feaure) {
+		return values[feaure];
+	}
+	
+	/**
+	 * @return array with all the values of the features of the point
+	 */
+	public float[] getValues() {
+		return values;
+	}
+
+	/**
+	 * Set the value of a feature.
+	 * 
+	 * @param values
+	 *            array of features
+	 */
+	public void setValue(int f, float value) {
+		this.values[f] = value;
+	}
+	
+	/**
+	 * Set the values of all features.
+	 * 
+	 * @param values
+	 *            array of features
+	 */
+	public void setValues(float[] values) {
+		this.values = values;
 	}
 
 	/**
 	 * @return a map with the missed features
 	 */
-	public Set<Integer> getMissedFeatures(){
+	public Set<Integer> getMissedFeatures() {
 		return this.missedFeatures;
 	}
-	
+
 	/**
 	 * Return if the feateure f of the point has a value or not.
 	 * 
@@ -66,7 +77,7 @@ public class Point {
 	 * @return number of features that the point has
 	 */
 	public int nFeatures() {
-		return features.length;
+		return values.length;
 	}
 
 	/**
@@ -81,7 +92,7 @@ public class Point {
 		Double d = 0D;
 		for (int i = 0; i < this.nFeatures(); i++) {
 			if (!ds.hasMissedValues(i)) {
-				d += Math.pow(features[i] - target.getFeature(i), 2.0);
+				d += Math.pow(values[i] - target.getValue(i), 2.0);
 			}
 		}
 		return Math.sqrt(d);
@@ -97,9 +108,9 @@ public class Point {
 	 * @return
 	 */
 	public boolean equals(DataSet ds, Point other) {
-		for (int i = 0; i < features.length; i++) {
+		for (int i = 0; i < values.length; i++) {
 			if (!ds.hasMissedValues(i)) {
-				if (Math.abs(features[i] - other.getFeature(i)) > 0.1) {
+				if (Math.abs(values[i] - other.getValue(i)) > 0.1) {
 					return false;
 				}
 			}
@@ -109,6 +120,6 @@ public class Point {
 
 	@Override
 	public String toString() {
-		return "#P:\t" + Arrays.toString(features);
+		return "#P:\t" + Arrays.toString(values);
 	}
 }

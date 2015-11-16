@@ -1,8 +1,6 @@
 package clustering;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import data.DataSet;
@@ -11,7 +9,7 @@ import data.Point;
 public class Cluster {
 	DataSet ds;
 	/** Points belonging to the cluster */
-	private List<Point> points;
+	private Set<Point> points;
 	/** Centroid point of the cluster */
 	private Point centroid;
 	/**
@@ -25,7 +23,7 @@ public class Cluster {
 
 	public Cluster(DataSet ds, Point centroid) {
 		this.ds = ds;
-		points = new ArrayList<Point>();
+		points = new HashSet<Point>();
 		this.centroid = centroid;
 		completed = false;
 		missedFeatures = new HashSet<Integer>();
@@ -50,7 +48,7 @@ public class Cluster {
 	/**
 	 * @return list with the points belonging to the cluster
 	 */
-	public List<Point> getPoints() {
+	public Set<Point> getPoints() {
 		return points;
 	}
 
@@ -70,7 +68,23 @@ public class Cluster {
 	 * @param missedFeature
 	 */
 	public void addMissedFeatures(Set<Integer> missedFeatures) {
-		this.missedFeatures.addAll(missedFeatures);
+		if (missedFeatures != null) {
+			this.missedFeatures.addAll(missedFeatures);
+		}
+	}
+
+	/**
+	 * @return set with the features that have missed values
+	 */
+	public Set<Integer> getMissedFeatures() {
+		return this.missedFeatures;
+	}
+
+	/**
+	 * @return true if the cluster contains some feature with missed values
+	 */
+	public boolean hasMissedFeatures() {
+		return !this.missedFeatures.isEmpty();
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package data;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
 public class DataSet {
 	/** Points of the data set */
@@ -24,6 +26,8 @@ public class DataSet {
 	private float[] standardDeviation;
 	/** Array to indicate which features have missed values */
 	private boolean[] incompleteFeature;
+	/** Names of each feature */
+	private String[] headers;
 
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
@@ -74,11 +78,11 @@ public class DataSet {
 				ESCAPE_CHAR, FIRST_LINE);
 
 		// Read header
-		point = reader.readNext();
-		sum = new float[point.length];
-		mean = new float[point.length];
-		standardDeviation = new float[point.length];
-		incompleteFeature = new boolean[point.length];
+		headers = reader.readNext();
+		sum = new float[headers.length];
+		mean = new float[headers.length];
+		standardDeviation = new float[headers.length];
+		incompleteFeature = new boolean[headers.length];
 		Arrays.fill(sum, 0F);
 		Arrays.fill(incompleteFeature, false);
 
@@ -115,7 +119,7 @@ public class DataSet {
 		// Calculate standard deviation
 		Arrays.fill(sum, 0F);
 		for (Point p : points) {
-			float[] features = p.getFeatures();
+			float[] features = p.getValues();
 			for (int i = 0; i < features.length; i++) {
 				sum[i] += Math.pow(features[i] - mean[i], 2);
 			}
@@ -135,13 +139,24 @@ public class DataSet {
 		}
 	}
 
+	public void exportDataSet(String file) throws IOException {
+		CSVWriter writer = new CSVWriter(new FileWriter(file));
+		writer.writeNext(headers);
+		for (Point p : points) {
+			// Convert array of values (floats) to array of strings and write it
+			writer.writeNext(Arrays.toString(p.getValues()).split("[\\[\\]]")[1]
+					.split(", "));
+		}
+		writer.close();
+	}
+
 	/**
 	 * Standarize the values of the features of all points. That is making the
 	 * valuess of each feature in the data have zero-mean and unit-variance.
 	 */
 	public void standarizePoints() {
 		for (Point p : points) {
-			float[] features = p.getFeatures();
+			float[] features = p.getValues();
 			for (int i = 0; i < features.length; i++) {
 				features[i] = (features[i] - mean[i]) / standardDeviation[i];
 			}
@@ -155,11 +170,12 @@ public class DataSet {
 
 	/**
 	 * Destandarize the values of the features of all points. That is making the
-	 * valuess of each feature in the data have mean μ and a standardDeviation σ.
+	 * valuess of each feature in the data have mean μ and a standardDeviation
+	 * σ.
 	 */
 	public void destandarizePoints() {
 		for (Point p : points) {
-			float[] features = p.getFeatures();
+			float[] features = p.getValues();
 			for (int i = 0; i < features.length; i++) {
 				// Round to 6 decimal places to remove truncation errors
 				features[i] = round(

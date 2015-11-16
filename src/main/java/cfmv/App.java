@@ -16,7 +16,8 @@ public class App {
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 
 	public static void main(String[] args) {
-		String dataSet = "src/main/resources/data.csv";
+		String dataSet = "src/main/resources/data-2.csv";
+		String output = "src/main/resources/output.csv";
 
 		try {
 			DataSet ds = new DataSet(dataSet);
@@ -26,12 +27,11 @@ public class App {
 			List<Cluster> clusters = kMeans.run(3);
 
 			ds.destandarizePoints();
-
-			logger.debug("Final clusters:");
-			for (int i = 0; i < clusters.size(); i++) {
-				logger.debug("Cluster " + i + ":");
-				logger.debug(clusters.get(i).toString());
-			}
+			
+			Finder f = new Finder(clusters);
+			f.replaceMissedValues();
+			
+			ds.exportDataSet(output);
 			
 			System.out.println("FIN");
 		} catch (IOException e) {
