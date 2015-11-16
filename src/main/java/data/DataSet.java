@@ -1,7 +1,9 @@
-package clustering;
+package data;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,9 +14,14 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class DataSet {
+	/** Points of the data set */
 	private List<Point> points;
+	/** Mean of the data set */
 	private float[] mean;
+	/** Standard deviation of the data set*/
 	private float[] standardDeviation;
+	/** Array to indicate which features have missed values */
+	private boolean[] missedValues;
 
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
@@ -22,7 +29,6 @@ public class DataSet {
 	public DataSet(String csvFile) throws NumberFormatException, IOException {
 		points = new ArrayList<Point>();
 		processData(csvFile);
-		standarizePoints();
 	}
 
 	/**
@@ -38,6 +44,11 @@ public class DataSet {
 	public int nFeatures() {
 		return mean.length;
 	}
+	
+	public boolean hasMissedValues(int i){
+		return missedValues[i];
+	}
+	
 
 	/**
 	 * Parses the data set and creates Point objetcs with the features given.
@@ -66,21 +77,23 @@ public class DataSet {
 		sum = new float[point.length];
 		mean = new float[point.length];
 		standardDeviation = new float[point.length];
+		missedValues = new boolean[point.length];
 		Arrays.fill(sum, 0F);
+		Arrays.fill(missedValues, false);
 
 		// Parse CSV dataset
 		while ((point = reader.readNext()) != null) {
 			float[] features = new float[point.length];
 			for (int i = 0; i < point.length; i++) {
 				if (point[i].equals("")) {
-					System.out.println("Missed value!");
+					missedValues[i] = true;
 					features[i] = 0;
 				} else {
 					features[i] = Float.parseFloat(point[i]);
 					sum[i] += features[i];
 				}
 			}
-			Point p = new Point(num, features);
+			Point p = new Point(features);
 			points.add(p);
 			num++;
 		}
@@ -107,6 +120,7 @@ public class DataSet {
 		logger.debug("Mean:\n" + Arrays.toString(mean));
 		logger.debug(
 				"Standar deviation:\n" + Arrays.toString(standardDeviation));
+		logger.debug("Features with missed values\n"+ Arrays.toString(missedValues));
 		for (Point p : points) {
 			logger.debug(p.toString());
 		}
@@ -116,7 +130,7 @@ public class DataSet {
 	 * Standarize the values of the features of all points. That is making the
 	 * valuess of each feature in the data have zero-mean and unit-variance.
 	 */
-	private void standarizePoints() {
+	public void standarizePoints() {
 		for (Point p : points) {
 			float[] features = p.getFeatures();
 			for (int i = 0; i < features.length; i++) {
@@ -128,5 +142,35 @@ public class DataSet {
 		for (Point p : points) {
 			logger.debug(p.toString());
 		}
+	}
+
+	public void destandarizePoints() {
+		for (Point p : points) {
+			float[] features = p.getFeatures();
+			for (int i = 0; i < features.length; i++) {
+				features[i] = round(
+						mean[i] + features[i] * standardDeviation[i], 6);
+			}
+		}
+
+		logger.debug("Points destandarized");
+		for (Point p : points) {
+			logger.debug(p.toString());
+		}
+	}
+
+	/**
+	 * Rounds a decimal number to a specific number of decimal places.
+	 * 
+	 * @param number
+	 *            number to round
+	 * @param nDecimals
+	 *            specified number of decimal places
+	 * @return rounded number
+	 */
+	private float round(float number, int nDecimals) {
+		BigDecimal bd = new BigDecimal(number);
+		bd = bd.setScale(nDecimals, RoundingMode.HALF_DOWN);
+		return bd.floatValue();
 	}
 }

@@ -3,7 +3,11 @@ package clustering;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.DataSet;
+import data.Point;
+
 public class Cluster {
+	DataSet ds;
 	/** Points belonging to the cluster */
 	private List<Point> points;
 	/** Centroid point of the cluster */
@@ -11,7 +15,8 @@ public class Cluster {
 	/** Processing status */
 	private boolean completed;
 
-	public Cluster(Point centroid) {
+	public Cluster(DataSet ds, Point centroid) {
+		this.ds = ds;
 		this.centroid = centroid;
 		completed = false;
 		points = new ArrayList<Point>();
@@ -94,17 +99,17 @@ public class Cluster {
 	public double calculateObjetiveFunction() {
 		Double value = 0D;
 		for (Point p : this.getPoints()) {
-			value += p.euclidianDistance(this.getCentroid());
+			value += p.euclidianDistance(ds, this.getCentroid());
 		}
 		return value;
 	}
 
 	@Override
 	public String toString() {
-		String str = "Centroid: " + this.getCentroid().toString() + "\n";
+		String str = "Centroid: " + this.getCentroid().toString();
 		if (this.points != null) {
 			for (Point p : this.getPoints()) {
-				str += p.toString() + "\n";
+				str += "\n" + p.toString();
 			}
 		} else {
 			str += "Empty";

@@ -1,4 +1,4 @@
-package kmeans;
+package clustering;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,9 +8,8 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import clustering.Cluster;
-import clustering.DataSet;
-import clustering.Point;
+import data.DataSet;
+import data.Point;
 
 /**
  * K-means algorithm.
@@ -44,19 +43,9 @@ public class KMeans {
 			cleanClusters(clusters);
 			assignPoints(clusters);
 			recalculateCentroids(clusters);
-			
-			//logger.info("Centroids:");
-			//for(Cluster c : clusters){
-			//	logger.info(c.getCentroid().toString());
-			//}
 		}
 
 		logger.info("K-means executions finished!");
-		logger.debug("Final clusters:");
-		for (int i = 0; i < clusters.size(); i++) {
-			logger.debug("Cluster " + i + ":");
-			logger.debug(clusters.get(i).toString());
-		}
 		return clusters;
 	}
 
@@ -74,36 +63,43 @@ public class KMeans {
 
 		// Get the max. and min. value of each feature
 		for (int i = 0; i < ds.nFeatures(); i++) {
-			float min = Float.POSITIVE_INFINITY;
-			float max = Float.NEGATIVE_INFINITY;
-			for (Point p : ds.getPoints()) {
-				float feature = p.getFeature(i);
-				min = min > feature ? feature : min;
-				max = max < feature ? feature : max;
+			if (!ds.hasMissedValues(i)) {
+				float min = Float.POSITIVE_INFINITY;
+				float max = Float.NEGATIVE_INFINITY;
+				for (Point p : ds.getPoints()) {
+					float feature = p.getFeature(i);
+					min = min > feature ? feature : min;
+					max = max < feature ? feature : max;
+				}
+				highest[i] = max;
+				lowests[i] = min;
 			}
-			highest[i] = max;
-			lowests[i] = min;
-		}	
+		}
 
 		// Get k random centroids with random features between min. and max.
 		// values of each features
 		Random random = new Random();
 		for (int i = 0; i < k; i++) {
 			float[] features = new float[ds.nFeatures()];
+
 			for (int f = 0; f < ds.nFeatures(); f++) {
-				features[f] = random.nextFloat()
-						* (highest[f] - lowests[f]) + lowests[f];
+				if (!ds.hasMissedValues(i)) {
+					features[f] = random.nextFloat() * (highest[f] - lowests[f])
+							+ lowests[f];
+				} else {
+					features[f] = 0;
+				}
 			}
-			Point centroid = new Point(Long.MAX_VALUE, features);
-			Cluster c = new Cluster(centroid);
+			Point centroid = new Point(features);
+			Cluster c = new Cluster(ds, centroid);
 			centroids.add(c);
 		}
-		
+
 		logger.debug("Initial centroids:");
-		for(Cluster c : centroids){
+		for (Cluster c : centroids) {
 			logger.debug(c.toString());
-		}		
-		
+		}
+
 		return centroids;
 	}
 
@@ -146,7 +142,7 @@ public class KMeans {
 			Double minimumDistance = Double.MAX_VALUE;
 			for (Cluster c : clusters) {
 				// Euclidian distance between the point and the centroid
-				Double distance = p.euclidianDistance(c.getCentroid());
+				Double distance = p.euclidianDistance(ds, c.getCentroid());
 				if (minimumDistance > distance) {
 					minimumDistance = distance;
 					closest = c;
@@ -154,9 +150,9 @@ public class KMeans {
 			}
 			closest.addPoint(p);
 		}
-		
+
 		logger.debug("Points assigned");
-		for(Cluster c : clusters){
+		for (Cluster c : clusters) {
 			logger.debug(c.toString());
 		}
 	}
@@ -169,7 +165,7 @@ public class KMeans {
 	 */
 	private void recalculateCentroids(List<Cluster> clusters) {
 		logger.debug("New centroids:");
-		
+
 		for (Cluster c : clusters) {
 			// Is the cluster has no points, the centroid is the same
 			if (c.isEmpty()) {
@@ -183,16 +179,18 @@ public class KMeans {
 			Arrays.fill(meanFeatures, 0F);
 			for (Point p : c.getPoints()) {
 				for (int f = 0; f < ds.nFeatures(); f++) {
-					meanFeatures[f] += ((p.getFeature(f) - meanFeatures[f])
-							/ c.nPoints());
+					if (!ds.hasMissedValues(f)) {
+						meanFeatures[f] += ((p.getFeature(f) - meanFeatures[f])
+								/ c.nPoints());
+					}
 				}
 			}
 
-			Point newCentroid = new Point(Long.MAX_VALUE, meanFeatures);
+			Point newCentroid = new Point(meanFeatures);
 
 			// If the new centroid is the same as the previois centroid, we are
 			// finished with this cluster. If not, the new centroid is setted
-			if (newCentroid.equals(c.getCentroid())) {
+			if (newCentroid.equals(ds, c.getCentroid())) {
 				c.setCompleted(true);
 				logger.debug("The same");
 			} else {

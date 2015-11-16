@@ -1,4 +1,4 @@
 /**
- * All classes related with clustering.
+ * Contains all the classes realated with k-means algorithm.
  */
 package clustering;

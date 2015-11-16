@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import clustering.Cluster;
-import clustering.DataSet;
-import kmeans.KMeans;
+import clustering.KMeans;
+import data.DataSet;
 
 public class App {
 
@@ -20,24 +20,19 @@ public class App {
 
 		try {
 			DataSet ds = new DataSet(dataSet);
+			ds.standarizePoints();
 
-			// Clusterize data
-			double fObjPrev;
-			double fObj = Double.MAX_VALUE;
-			int k = 2;
-			do {
-				KMeans kMeans = new KMeans(ds);
-				List<Cluster> clusters = kMeans.run(k);
-				fObjPrev = fObj;
-				fObj = 0;
-				k++;
-				for (Cluster c : clusters) {
-					fObj += c.calculateObjetiveFunction();
-				}
-				logger.info("F. obj: " + fObj + "F. obj prev: " + fObjPrev
-						+ "Diff: " + (fObjPrev - fObj));
-			} while ((fObjPrev - fObj) > 0.1);
+			KMeans kMeans = new KMeans(ds);
+			List<Cluster> clusters = kMeans.run(3);
 
+			ds.destandarizePoints();
+
+			logger.debug("Final clusters:");
+			for (int i = 0; i < clusters.size(); i++) {
+				logger.debug("Cluster " + i + ":");
+				logger.debug(clusters.get(i).toString());
+			}
+			
 			System.out.println("FIN");
 		} catch (IOException e) {
 			System.out
