@@ -5,17 +5,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import clustering.Cluster;
+import data.DataSet;
 import data.Point;
 
 public class Finder {
 	List<Cluster> clusters;
+	DataSet ds;
 
-	public Finder(List<Cluster> clusters) {
+	/** Logger */
+	private static final Logger logger = LoggerFactory.getLogger(Finder.class);
+
+	public Finder(DataSet ds, List<Cluster> clusters) {
+		this.ds = ds;
 		this.clusters = clusters;
 	}
 
 	public void replaceMissedValues() {
+		logger.info("Replace missed values.");
+
 		for (Cluster c : clusters) {
 			if (c.hasMissedFeatures()) {
 				Map<Integer, Float> mean = new HashMap<Integer, Float>();
@@ -48,8 +59,15 @@ public class Finder {
 
 				// Replace missed values by the mean of the feature
 				for (int f : incompletePoints.keySet()) {
+					String type = ds.getType(f);
 					for (Point p : incompletePoints.get(f)) {
-						p.setValue(f, mean.get(f));
+						if(type.equals("i") || type.equals("c")){
+							// Integer
+							p.setValue(f, Math.round(mean.get(f))); 
+						} else {
+							// Decimal
+							p.setValue(f, mean.get(f));
+						}
 					}
 				}
 			}

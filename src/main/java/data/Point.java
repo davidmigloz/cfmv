@@ -27,7 +27,7 @@ public class Point {
 	public float getValue(int feaure) {
 		return values[feaure];
 	}
-	
+
 	/**
 	 * @return array with all the values of the features of the point
 	 */
@@ -44,7 +44,7 @@ public class Point {
 	public void setValue(int f, float value) {
 		this.values[f] = value;
 	}
-	
+
 	/**
 	 * Set the values of all features.
 	 * 

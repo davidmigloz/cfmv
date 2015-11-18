@@ -28,6 +28,11 @@ public class DataSet {
 	private boolean[] incompleteFeature;
 	/** Names of each feature */
 	private String[] headers;
+	/**
+	 * Type of data of each feature. Types: -i: integer number -d: decimal
+	 * number -n: n categorical possible values (starting from 0)
+	 */
+	private String[] types;
 
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
@@ -51,8 +56,15 @@ public class DataSet {
 		return mean.length;
 	}
 
-	public boolean hasMissedValues(int i) {
-		return incompleteFeature[i];
+	public boolean hasMissedValues(int f) {
+		return incompleteFeature[f];
+	}
+
+	/**
+	 * @return array with the type of each feature
+	 */
+	public String getType(int f) {
+		return this.types[f];
 	}
 
 	/**
@@ -65,6 +77,8 @@ public class DataSet {
 	 */
 	private void processData(String dataSet)
 			throws NumberFormatException, IOException {
+		logger.info("Process data set.");
+
 		String[] point; // Array of strings with the features of a point
 		float[] sum; // Sum of all the values of each feature
 		long num = 0; // Number of points processed
@@ -79,6 +93,10 @@ public class DataSet {
 
 		// Read header
 		headers = reader.readNext();
+		// Read types
+		types = reader.readNext();
+
+		// Arrays
 		sum = new float[headers.length];
 		mean = new float[headers.length];
 		standardDeviation = new float[headers.length];
@@ -140,12 +158,28 @@ public class DataSet {
 	}
 
 	public void exportDataSet(String file) throws IOException {
-		CSVWriter writer = new CSVWriter(new FileWriter(file));
+		logger.info("Export data set.");
+
+		final char SEPARATOR = ','; // Separator of the values of the CSV file
+		final char ESCAPE_CHAR = '"'; // Escape character in the CSV file
+		CSVWriter writer = new CSVWriter(new FileWriter(file), SEPARATOR,
+				ESCAPE_CHAR);
+		
 		writer.writeNext(headers);
+		writer.writeNext(types);
 		for (Point p : points) {
 			// Convert array of values (floats) to array of strings and write it
-			writer.writeNext(Arrays.toString(p.getValues()).split("[\\[\\]]")[1]
-					.split(", "));
+			String[] line = new String[this.nFeatures()];
+			for (int f = 0; f < this.nFeatures(); f++) {
+				if (this.getType(f).equals("i")
+						|| this.getType(f).equals("c")) {
+					int n = (int) Math.round(p.getValue(f));
+					line[f] = Integer.toString(n);
+				} else {
+					line[f] = Float.toString(p.getValue(f));
+				}
+			}
+			writer.writeNext(line);
 		}
 		writer.close();
 	}
@@ -155,6 +189,8 @@ public class DataSet {
 	 * valuess of each feature in the data have zero-mean and unit-variance.
 	 */
 	public void standarizePoints() {
+		logger.info("Standarize points.");
+
 		for (Point p : points) {
 			float[] features = p.getValues();
 			for (int i = 0; i < features.length; i++) {
@@ -174,6 +210,8 @@ public class DataSet {
 	 * σ.
 	 */
 	public void destandarizePoints() {
+		logger.info("Destandarize points.");
+
 		for (Point p : points) {
 			float[] features = p.getValues();
 			for (int i = 0; i < features.length; i++) {

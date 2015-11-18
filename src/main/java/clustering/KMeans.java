@@ -34,18 +34,17 @@ public class KMeans {
 	 */
 	public List<Cluster> run(int k) {
 		this.k = k;
-		logger.info("Running k-means k=" + k);
+		logger.info("Run " + k + "-means.");
 
 		List<Cluster> clusters = chooseCentroids();
 
 		while (!isFinished(clusters)) {
-			logger.debug("Not finish");
+			logger.trace("Not finish");
 			cleanClusters(clusters);
 			assignPoints(clusters);
 			recalculateCentroids(clusters);
 		}
 
-		logger.info("K-means executions finished!");
 		return clusters;
 	}
 
@@ -149,9 +148,10 @@ public class KMeans {
 				}
 			}
 			// Add point to the closest cluster
-			closest.addPoint(p); 
-			// Register in the cluster if the point has features with missed values
-			closest.addMissedFeatures(p.getMissedFeatures()); 
+			closest.addPoint(p);
+			// Register in the cluster if the point has features with missed
+			// values
+			closest.addMissedFeatures(p.getMissedFeatures());
 		}
 
 		logger.debug("Points assigned");
