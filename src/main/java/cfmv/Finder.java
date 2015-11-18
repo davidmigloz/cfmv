@@ -26,8 +26,12 @@ public class Finder {
 
 	public void replaceMissedValues() {
 		logger.info("Replace missed values.");
+		logger.debug("Number of clusters: " + clusters.size());
 
 		for (Cluster c : clusters) {
+			logger.debug("Cluster with " + c.nPoints() + " points. MV: "
+					+ c.hasMissedFeatures());
+
 			if (c.hasMissedFeatures()) {
 				Map<Integer, Float> mean = new HashMap<Integer, Float>();
 				Map<Integer, List<Point>> incompletePoints = new HashMap<Integer, List<Point>>();
@@ -61,9 +65,9 @@ public class Finder {
 				for (int f : incompletePoints.keySet()) {
 					String type = ds.getType(f);
 					for (Point p : incompletePoints.get(f)) {
-						if(type.equals("i") || type.equals("c")){
+						if (type.equals("i") || type.equals("c")) {
 							// Integer
-							p.setValue(f, Math.round(mean.get(f))); 
+							p.setValue(f, Math.round(mean.get(f)));
 						} else {
 							// Decimal
 							p.setValue(f, mean.get(f));

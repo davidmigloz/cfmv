@@ -1,6 +1,5 @@
 package cfmv;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +29,7 @@ public class App {
 			ds.standarizePoints();
 
 			KMeans kMeans = new KMeans(ds);
-			List<Cluster> clusters = kMeans.run(3);
+			List<Cluster> clusters = kMeans.run(4);
 
 			ds.destandarizePoints();
 
@@ -81,10 +80,18 @@ public class App {
 				}
 				if (!lineOriginal[v].equals(lineOutput[v])) {
 					nErrors++;
+					logger.debug(lineOriginal[v] + " != " + lineOutput[v]);
 				}
 			}
 		}
 
+		readerOriginal.close();
+		readerIncomplete.close();
+		readerOutput.close();
+
+		logger.info("---------------------------------------");
+		logger.info("----------- R E S U L T S -------------");
+		logger.info("---------------------------------------");
 		logger.info("Misssed values: " + nMissedValues);
 		logger.info("Errors: " + nErrors);
 		logger.info("Accuracy ratio: "
