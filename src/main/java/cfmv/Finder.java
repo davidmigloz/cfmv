@@ -25,8 +25,7 @@ public class Finder {
 	}
 
 	public void replaceMissedValues() {
-		logger.info("Replace missed values.");
-		logger.debug("Number of clusters: " + clusters.size());
+		System.out.println("Replacing missed values...");
 
 		for (Cluster c : clusters) {
 			logger.debug("Cluster with " + c.nPoints() + " points. MV: "

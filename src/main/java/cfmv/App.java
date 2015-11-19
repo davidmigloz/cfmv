@@ -1,5 +1,6 @@
 package cfmv;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -17,40 +18,28 @@ public class App {
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 
-	public static void main(String[] args) {
-		logger.info("Start execution.");
+	public static void run(File incompleteDS, File output, int k)
+			throws NumberFormatException, IOException {
+		System.out.println("Running...");
 
-		String originalDS = "src/main/resources/original.csv";
-		String incompletDS = "src/main/resources/incomplete.csv";
-		String output = "src/main/resources/output.csv";
+		DataSet ds = new DataSet(incompleteDS);
+		ds.standarizePoints();
 
-		try {
-			DataSet ds = new DataSet(incompletDS);
-			ds.standarizePoints();
+		KMeans kMeans = new KMeans(ds);
+		List<Cluster> clusters = kMeans.run(k);
 
-			KMeans kMeans = new KMeans(ds);
-			List<Cluster> clusters = kMeans.run(4);
+		ds.destandarizePoints();
 
-			ds.destandarizePoints();
+		Finder f = new Finder(ds, clusters);
+		f.replaceMissedValues();
 
-			Finder f = new Finder(ds, clusters);
-			f.replaceMissedValues();
+		ds.exportDataSet(output);
 
-			ds.exportDataSet(output);
-
-			logger.info("End of execution.");
-
-			similarity(originalDS, incompletDS, output);
-		} catch (IOException e) {
-			System.out
-					.println("Error at processing data set. " + e.getMessage());
-		} catch (NumberFormatException e) {
-			System.out.println("Wrong value. " + e.getMessage());
-		}
+		System.out.println("Finished!");
 	}
 
-	public static void similarity(String original, String incomplete,
-			String output) throws IOException {
+	public static void similarity(File original, File incomplete, File output)
+			throws IOException {
 		final char SEPARATOR = ','; // Separator of the values of the CSV file
 		final char ESCAPE_CHAR = '"'; // Escape character in the CSV file
 		final int FIRST_LINE = 0; // First line to read (starting from 0)
@@ -60,8 +49,9 @@ public class App {
 				SEPARATOR, ESCAPE_CHAR, FIRST_LINE);
 		CSVReader readerIncomplete = new CSVReader(new FileReader(incomplete),
 				SEPARATOR, ESCAPE_CHAR, FIRST_LINE);
-		CSVReader readerOutput = new CSVReader(new FileReader(output),
-				SEPARATOR, ESCAPE_CHAR, FIRST_LINE);
+		CSVReader readerOutput = new CSVReader(
+				new FileReader(output + "\\output.csv"), SEPARATOR, ESCAPE_CHAR,
+				FIRST_LINE);
 
 		int nMissedValues = 0;
 		int nErrors = 0;
@@ -70,31 +60,30 @@ public class App {
 		String[] lineIncomplete;
 		String[] lineOutput;
 
-		while ((lineOriginal = readerOriginal.readNext()) != null) {
-			lineIncomplete = readerIncomplete.readNext();
-			lineOutput = readerOutput.readNext();
+		try {
+			while ((lineOriginal = readerOriginal.readNext()) != null) {
+				lineIncomplete = readerIncomplete.readNext();
+				lineOutput = readerOutput.readNext();
 
-			for (int v = 0; v < lineOriginal.length; v++) {
-				if (!lineOriginal[v].equals(lineIncomplete[v])) {
-					nMissedValues++;
-				}
-				if (!lineOriginal[v].equals(lineOutput[v])) {
-					nErrors++;
-					logger.debug(lineOriginal[v] + " != " + lineOutput[v]);
+				for (int v = 0; v < lineOriginal.length; v++) {
+					if (!lineOriginal[v].equals(lineIncomplete[v])) {
+						nMissedValues++;
+					}
+					if (!lineOriginal[v].equals(lineOutput[v])) {
+						nErrors++;
+						logger.debug(lineOriginal[v] + " != " + lineOutput[v]);
+					}
 				}
 			}
+		} finally {
+			readerOriginal.close();
+			readerIncomplete.close();
+			readerOutput.close();
 		}
 
-		readerOriginal.close();
-		readerIncomplete.close();
-		readerOutput.close();
-
-		logger.info("---------------------------------------");
-		logger.info("----------- R E S U L T S -------------");
-		logger.info("---------------------------------------");
-		logger.info("Misssed values: " + nMissedValues);
-		logger.info("Errors: " + nErrors);
-		logger.info("Accuracy ratio: "
+		System.out.println("Misssed values: " + nMissedValues);
+		System.out.println("Errors: " + nErrors);
+		System.out.println("Accuracy ratio: "
 				+ (1 - ((float) nErrors) / nMissedValues) * 100 + "%");
 	}
 }

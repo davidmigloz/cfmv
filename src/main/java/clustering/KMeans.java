@@ -34,7 +34,7 @@ public class KMeans {
 	 */
 	public List<Cluster> run(int k) {
 		this.k = k;
-		logger.info("Run " + k + "-means.");
+		System.out.println("Running " + k + "-means...");
 
 		List<Cluster> clusters = chooseCentroids();
 
