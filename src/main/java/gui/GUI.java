@@ -1,4 +1,4 @@
-package cfmv;
+package gui;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -8,8 +8,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import cfmv.App;
+import cfmv.Comparator;
 
 import javax.swing.JLabel;
 import javax.swing.JButton;
@@ -27,17 +27,23 @@ import javax.swing.JSeparator;
 import javax.swing.JScrollPane;
 import javax.swing.SpinnerNumberModel;
 
+/**
+ * Graphic interface
+ */
 public class GUI extends JFrame {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+	/** CVS with original data set */
 	private File originalDS;
+	/** CVS with incomplete data set */
 	private File incompleteDS;
+	/** Output folder */
 	private File output;
+	/** k for k-means */
 	private int k;
+	/** Flag */
 	private boolean runned;
+	/** To show messages the console of the GUI */
 	MessageConsole mc;
 
 	private JPanel contentPane;
@@ -53,11 +59,8 @@ public class GUI extends JFrame {
 	private JButton btnCompare;
 	private JButton btnOriginalDS;
 
-	/** Logger */
-	private static final Logger logger = LoggerFactory.getLogger(GUI.class);
-
 	/**
-	 * Launch the application.
+	 * Launch the application with GUI.
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -80,9 +83,9 @@ public class GUI extends JFrame {
 		setContentPane(contentPane);
 		setTitle("Finding missed values in a data set");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 445, 326);
+		setBounds(100, 100, 445, 433);
 
-		String desktop = System.getProperty("user.home") + "\\Desktop";
+		String desktop = (System.getProperty("user.home") + "\\Desktop").replace("\\", "/");
 		fc = new JFileChooser(desktop);
 
 		// Data set with missed values
@@ -94,7 +97,7 @@ public class GUI extends JFrame {
 		incompleteDSinput = new JTextField();
 		incompleteDSinput.setBounds(15, 25, 199, 20);
 		incompleteDSinput.setColumns(10);
-		incompleteDSinput.setText(desktop + "\\dataset.csv");
+		incompleteDSinput.setText(desktop + "/dataset.csv");
 		incompleteDS = new File(incompleteDSinput.getText());
 
 		btnOpenIncompleteDS = new JButton("Open");
@@ -109,7 +112,7 @@ public class GUI extends JFrame {
 				int result = fc.showSaveDialog(GUI.this);
 				if (result == JFileChooser.APPROVE_OPTION) {
 					incompleteDS = fc.getSelectedFile();
-					incompleteDSinput.setText(incompleteDS.toString());
+					incompleteDSinput.setText(incompleteDS.toString().replace("\\", "/"));
 				}
 			}
 		});
@@ -123,7 +126,7 @@ public class GUI extends JFrame {
 		outputInput.setBounds(15, 74, 199, 20);
 		outputInput.setColumns(10);
 		outputInput.setText(desktop);
-		output = new File(outputInput.getText());
+		output = new File(outputInput.getText().replace("\\", "/"));
 
 		btnOutput = new JButton("Select");
 		btnOutput.setBounds(224, 74, 70, 20);
@@ -134,7 +137,7 @@ public class GUI extends JFrame {
 				int result = fc.showSaveDialog(GUI.this);
 				if (result == JFileChooser.APPROVE_OPTION) {
 					output = fc.getSelectedFile();
-					outputInput.setText(output.toString());
+					outputInput.setText(output.toString().replace("\\", "/"));
 				}
 			}
 		});
@@ -166,25 +169,25 @@ public class GUI extends JFrame {
 		messagesArea.setEditable(false);
 
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(15, 120, 397, 92);
+		scrollPane.setBounds(15, 120, 397, 193);
 		scrollPane.setViewportView(messagesArea);
 
 		mc = new MessageConsole(messagesArea);
-		mc.redirectOut();
+		mc.redirectOut(null, System.out); // Show messages in both consoles
 		mc.redirectErr(Color.RED, null);
 
 		JSeparator separator = new JSeparator();
-		separator.setBounds(15, 221, 395, 2);
+		separator.setBounds(15, 326, 395, 2);
 
 		// Compare
 		JLabel lblOriginalDSinput = new JLabel("Original data set:");
-		lblOriginalDSinput.setBounds(15, 236, 173, 14);
+		lblOriginalDSinput.setBounds(15, 343, 173, 14);
 		lblOriginalDSinput.setLabelFor(originalDSinput);
 
 		originalDSinput = new JTextField();
-		originalDSinput.setBounds(15, 251, 199, 20);
+		originalDSinput.setBounds(15, 358, 199, 20);
 		originalDSinput.setColumns(10);
-		originalDSinput.setText(desktop + "\\original.csv");
+		originalDSinput.setText(desktop + "/original.csv");
 		originalDS = new File(originalDSinput.getText());
 
 		btnOriginalDS = new JButton("Select");
@@ -198,11 +201,11 @@ public class GUI extends JFrame {
 				int result = fc.showSaveDialog(GUI.this);
 				if (result == JFileChooser.APPROVE_OPTION) {
 					originalDS = fc.getSelectedFile();
-					originalDSinput.setText(originalDS.toString());
-				}			
+					originalDSinput.setText(originalDS.toString().replace("\\", "/"));
+				}
 			}
 		});
-		btnOriginalDS.setBounds(224, 251, 70, 20);
+		btnOriginalDS.setBounds(224, 358, 70, 20);
 
 		btnCompare = new JButton("Compare");
 		btnCompare.addActionListener(new ActionListener() {
@@ -210,7 +213,7 @@ public class GUI extends JFrame {
 				compare();
 			}
 		});
-		btnCompare.setBounds(313, 232, 99, 40);
+		btnCompare.setBounds(313, 339, 99, 40);
 
 		// Layout
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -233,6 +236,9 @@ public class GUI extends JFrame {
 		contentPane.add(btnCompare);
 	}
 
+	/**
+	 * Execute the proccesing of the data set.
+	 */
 	private void run() {
 		messagesArea.setText("");
 		try {
@@ -241,28 +247,36 @@ public class GUI extends JFrame {
 				App.run(incompleteDS, output, k);
 				runned = true;
 			} else {
-				logger.info("ERROR: program not configured");
+				System.err.println("ERROR: program not configured");
 			}
 		} catch (IOException e) {
-			logger.info("Error at processing data set. " + e.getMessage());
+			System.err.println("ERROR: at processing data set. " + e.getMessage());
 		} catch (NumberFormatException e) {
-			logger.info("Wrong value. " + e.getMessage());
+			System.err.println("ERROR: wrong value. " + e.getMessage());
+		} catch (Exception e) { 
+			System.err.println("ERROR");
 		}
 	}
 
+	/**
+	 * Compare the original data set with the output data set.
+	 */
 	private void compare() {
 		messagesArea.setText("");
 		try {
 			if (originalDS != null && incompleteDS != null && output != null
 					&& runned) {
-				App.similarity(originalDS, incompleteDS, output);
+				Comparator.compare(originalDS, incompleteDS, output);
 			} else {
-				logger.info("ERROR: program not configured");
+				System.err.println("ERROR: program not configured");
 			}
 		} catch (IOException e) {
-			logger.info("Error at processing data set. " + e.getMessage());
+			System.err.println("ERROR: at processing data set. " + e.getMessage());
 		} catch (NumberFormatException e) {
-			logger.info("Wrong value. " + e.getMessage());
+			System.err.println("ERROR: wrong value. " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) { 
+			System.err.println("ERROR");
 		}
 	}
 }

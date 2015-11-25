@@ -3,6 +3,11 @@ package data;
 import java.util.Arrays;
 import java.util.Set;
 
+/**
+ * A point is composed of one or more attributes or features. It has an array
+ * with its values of each feature. It also stores information about the
+ * features wich have missed values.
+ */
 public class Point {
 	/** Array with the values of the features of the point */
 	private float[] values;
@@ -38,8 +43,9 @@ public class Point {
 	/**
 	 * Set the value of a feature.
 	 * 
-	 * @param values
-	 *            array of features
+	 * @param f
+	 *            feature
+	 * @param value
 	 */
 	public void setValue(int f, float value) {
 		this.values[f] = value;
@@ -81,38 +87,39 @@ public class Point {
 	}
 
 	/**
-	 * Calculate the Euclidian distance from the point to another point.
+	 * Calculate the Squared Euclidean Distance from the point to another point.
+	 * It place progressively greater weight on objects that are farther apart.
 	 * 
 	 * @param ds
 	 *            dataset
-	 * @param destino
-	 * @return Euclidian distance
+	 * @param target
+	 *            point
+	 * @return Squared Euclidean Distance
 	 */
-	public Double euclidianDistance(DataSet ds, Point target) {
+	public Double squaredEuclidianDistance(DataSet ds, Point target) {
 		Double d = 0D;
 		for (int i = 0; i < this.nFeatures(); i++) {
 			if (!ds.hasMissedValues(i)) {
 				d += Math.pow(values[i] - target.getValue(i), 2.0);
 			}
 		}
-		return Math.sqrt(d);
+		return d;
 	}
 
 	/**
-	 * Determines if two points are the same (with a certein tolerance).
+	 * Determines if two points are the same without taking into account missed
+	 * values.
 	 * 
 	 * @param ds
 	 *            data set
 	 * @param other
 	 *            point to compare
-	 * @return
+	 * @return true / false
 	 */
 	public boolean equals(DataSet ds, Point other) {
 		for (int i = 0; i < values.length; i++) {
 			if (!ds.hasMissedValues(i)) {
-				if (Math.abs(values[i] - other.getValue(i)) > 0.1) {
-					return false;
-				}
+				return values[i] == other.getValue(i);
 			}
 		}
 		return true;

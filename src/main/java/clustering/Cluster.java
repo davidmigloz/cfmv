@@ -1,12 +1,19 @@
 package clustering;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import data.DataSet;
 import data.Point;
 
+/**
+ * Collection of data points that are more similar to each other than to those
+ * in other clusters. The centroid is the arithmetic mean (average) position of
+ * all the points in the cluster.
+ */
 public class Cluster {
+	/** Date set of points */
 	DataSet ds;
 	/** Points belonging to the cluster */
 	private Set<Point> points;
@@ -16,7 +23,7 @@ public class Cluster {
 	 * If the centroid is the same in two consecutive iterations of k-means the
 	 * status of the cluster changes to completed.
 	 */
-	private boolean completed;
+	private boolean sameCentroid;
 
 	/** List of features that contain missed values in the cluster */
 	private Set<Integer> missedFeatures;
@@ -25,7 +32,7 @@ public class Cluster {
 		this.ds = ds;
 		points = new HashSet<Point>();
 		this.centroid = centroid;
-		completed = false;
+		sameCentroid = false;
 		missedFeatures = new HashSet<Integer>();
 	}
 
@@ -88,20 +95,20 @@ public class Cluster {
 	}
 
 	/**
-	 * @return true is the cluster is fully processed (the centroid doesn't
-	 *         change)
+	 * @return true if the cluster centroid doesn't change it two consecutive
+	 *         iterations.
 	 */
-	public boolean isCompleted() {
-		return completed;
+	public boolean isFinished() {
+		return sameCentroid;
 	}
 
 	/**
-	 * Set processing status
+	 * Set processing status.
 	 * 
 	 * @param status
 	 */
-	public void setCompleted(boolean status) {
-		this.completed = status;
+	public void setFinished(boolean status) {
+		this.sameCentroid = status;
 	}
 
 	/**
@@ -126,25 +133,17 @@ public class Cluster {
 		missedFeatures.clear();
 	}
 
-	/**
-	 * @return sumatorium of the distance of each point of the cluster to its
-	 *         centroid
-	 */
-	public double calculateObjetiveFunction() {
-		Double value = 0D;
-		for (Point p : this.getPoints()) {
-			value += p.euclidianDistance(ds, this.getCentroid());
-		}
-		return value;
-	}
-
 	@Override
 	public String toString() {
 		String str = "Centroid: " + this.getCentroid().toString();
-		if (this.points != null) {
-			for (Point p : this.getPoints()) {
-				str += "\n" + p.toString();
+		if (this.points != null && !this.points.isEmpty()) {
+			Iterator<Point> it = this.getPoints().iterator();
+			for (int i = 0; i < 10; i++) { // Show 10 first point
+				if (it.hasNext()) {
+					str += "\n" + it.next().toString();
+				}
 			}
+			str += "\n...";
 		} else {
 			str += "Empty";
 		}

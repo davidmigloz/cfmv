@@ -12,8 +12,14 @@ import clustering.Cluster;
 import data.DataSet;
 import data.Point;
 
+/**
+ * Fill the missed values of a dataset with the mean of the feature in its
+ * respective cluster.
+ */
 public class Finder {
+	/** Clusters obtainded with k-means */
 	List<Cluster> clusters;
+	/** Data set */
 	DataSet ds;
 
 	/** Logger */
@@ -24,15 +30,21 @@ public class Finder {
 		this.clusters = clusters;
 	}
 
+	/**
+	 * Replace missed values by the mean of the feature in the corresponding cluster.
+	 */
 	public void replaceMissedValues() {
-		System.out.println("Replacing missed values...");
+		System.out.println(">Replacing missed values...");
 
 		for (Cluster c : clusters) {
 			logger.debug("Cluster with " + c.nPoints() + " points. MV: "
 					+ c.hasMissedFeatures());
 
 			if (c.hasMissedFeatures()) {
+				// Map feature -> mean
 				Map<Integer, Float> mean = new HashMap<Integer, Float>();
+				// Map feature -> list of points with the value of the feature
+				// missed
 				Map<Integer, List<Point>> incompletePoints = new HashMap<Integer, List<Point>>();
 
 				// Prepare maps with an entry per misdded feature
@@ -64,7 +76,7 @@ public class Finder {
 				for (int f : incompletePoints.keySet()) {
 					String type = ds.getType(f);
 					for (Point p : incompletePoints.get(f)) {
-						if (type.equals("i") || type.equals("c")) {
+						if (type.equals("i")) {
 							// Integer
 							p.setValue(f, Math.round(mean.get(f)));
 						} else {

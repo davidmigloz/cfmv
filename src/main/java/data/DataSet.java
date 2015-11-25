@@ -18,6 +18,10 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
+/**
+ * A dataset is a collection of data points. This class performs all the operation related with the data set. It
+ * parse the CSV file, create Point objets, standarize/destandarize points, etc.
+ */
 public class DataSet {
 	/** Points of the data set */
 	private List<Point> points;
@@ -31,7 +35,7 @@ public class DataSet {
 	private String[] headers;
 	/**
 	 * Type of data of each feature. Types: -i: integer number -d: decimal
-	 * number -n: n categorical possible values (starting from 0)
+	 * number
 	 */
 	private String[] types;
 
@@ -58,6 +62,11 @@ public class DataSet {
 		return mean.length;
 	}
 
+	/**
+	 * @param f
+	 *            feature
+	 * @return true if that feature has some missed value
+	 */
 	public boolean hasMissedValues(int f) {
 		return incompleteFeature[f];
 	}
@@ -70,7 +79,9 @@ public class DataSet {
 	}
 
 	/**
-	 * Parses the data set and creates Point objetcs with the features given.
+	 * Parses the data set and creates Point objetcs with the features given. It
+	 * also register the missed values and calculates the mean and standard
+	 * deviation for each feature.
 	 * 
 	 * @param incompleteDS
 	 *            data set in CSV format
@@ -79,7 +90,7 @@ public class DataSet {
 	 */
 	private void processData(File incompleteDS)
 			throws NumberFormatException, IOException {
-		System.out.println("Processing data set file...");
+		System.out.println(">Processing data set file...");
 
 		String[] point; // Array of strings with the features of a point
 		float[] sum; // Sum of all the values of each feature
@@ -135,8 +146,18 @@ public class DataSet {
 		} finally {
 			reader.close();
 		}
-		
+
+		// Show figures about missed values
 		System.out.println("Missed values: " + nMissedValues);
+		List<String> missedFeatures = new ArrayList<String>();
+		for (int i = 0; i < incompleteFeature.length; i++) {
+			if (incompleteFeature[i]) {
+				missedFeatures.add(headers[i]);
+			}
+		}
+		System.out.println("In " + missedFeatures.size() + " features out of "
+				+ incompleteFeature.length + ":");
+		System.out.println(missedFeatures.toString());
 
 		// Calculate mean
 		for (int i = 0; i < sum.length; i++) {
@@ -161,18 +182,26 @@ public class DataSet {
 				"Standar deviation:\n" + Arrays.toString(standardDeviation));
 		logger.debug("Features with missed values\n"
 				+ Arrays.toString(incompleteFeature));
-		for (Point p : points) {
-			logger.debug(p.toString());
+		for (int i = 0; i < 10; i++){ // Show 10 first point
+			logger.debug(points.get(i).toString());
 		}
+		logger.debug("...");
 	}
 
+	/**
+	 * Exports the data set to a CSV file.
+	 * 
+	 * @param output
+	 *            path where to export
+	 * @throws IOException
+	 */
 	public void exportDataSet(File output) throws IOException {
-		System.out.println("Exporting data set...");
+		System.out.println(">Exporting data set...");
 
 		final char SEPARATOR = ','; // Separator of the values of the CSV file
 		final char ESCAPE_CHAR = '"'; // Escape character in the CSV file
 		CSVWriter writer = new CSVWriter(
-				new FileWriter(output + "\\output.csv"), SEPARATOR,
+				new FileWriter(output + "/output.csv"), SEPARATOR,
 				ESCAPE_CHAR);
 
 		try {
@@ -183,8 +212,7 @@ public class DataSet {
 				// write it
 				String[] line = new String[this.nFeatures()];
 				for (int f = 0; f < this.nFeatures(); f++) {
-					if (this.getType(f).equals("i")
-							|| this.getType(f).equals("c")) {
+					if (this.getType(f).equals("i")) {
 						int n = (int) Math.round(p.getValue(f));
 						line[f] = Integer.toString(n);
 					} else {
@@ -200,10 +228,11 @@ public class DataSet {
 
 	/**
 	 * Standarize the values of the features of all points. That is making the
-	 * valuess of each feature in the data have zero-mean and unit-variance.
+	 * valuess of each feature in the data have zero-mean and unit-variance. 
+	 * z = (x - μ) / σ
 	 */
-	public void standarizePoints() {
-		System.out.println("Standarizing points...");
+	public void standardizePoints() {
+		System.out.println(">Standarizing points...");
 
 		for (Point p : points) {
 			float[] features = p.getValues();
@@ -213,18 +242,20 @@ public class DataSet {
 		}
 
 		logger.debug("Points standarized");
-		for (Point p : points) {
-			logger.debug(p.toString());
+		for (int i = 0; i < 10; i++){ // Show 10 first point
+			logger.debug(points.get(i).toString());
 		}
+		logger.debug("...");
 	}
 
 	/**
 	 * Destandarize the values of the features of all points. That is making the
 	 * valuess of each feature in the data have mean μ and a standardDeviation
-	 * σ.
+	 * σ. 
+	 * x = μ + zσ
 	 */
-	public void destandarizePoints() {
-		System.out.println("Destandarizing points...");
+	public void destandardizePoints() {
+		System.out.println(">Destandarizing points...");
 
 		for (Point p : points) {
 			float[] features = p.getValues();
@@ -236,13 +267,15 @@ public class DataSet {
 		}
 
 		logger.debug("Points destandarized");
-		for (Point p : points) {
-			logger.debug(p.toString());
+		for (int i = 0; i < 10; i++){ // Show 10 first point
+			logger.debug(points.get(i).toString());
 		}
+		logger.debug("...");
 	}
 
 	/**
-	 * Rounds a decimal number to a specific number of decimal places.
+	 * Rounds a decimal number to a specific number of decimal places using the
+	 * mode half down.
 	 * 
 	 * @param number
 	 *            number to round

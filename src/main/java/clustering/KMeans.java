@@ -12,10 +12,14 @@ import data.DataSet;
 import data.Point;
 
 /**
- * K-means algorithm.
+ * K-means algorithm. K-means is an iterative algorithm that keeps assigning
+ * data points to clusters identified by special points called centroids, until
+ * the cluster assignment stabilizes.
  */
 public class KMeans {
+	/** Number of clusters to create */
 	int k;
+	/** Data set with the points */
 	DataSet ds;
 
 	/** Logger */
@@ -34,17 +38,26 @@ public class KMeans {
 	 */
 	public List<Cluster> run(int k) {
 		this.k = k;
-		System.out.println("Running " + k + "-means...");
+		System.out.println(">Running " + k + "-means...");
 
 		List<Cluster> clusters = chooseCentroids();
 
+		int nIter = 0; // Number of iterations
 		while (!isFinished(clusters)) {
 			logger.trace("Not finish");
+			nIter++;
 			cleanClusters(clusters);
 			assignPoints(clusters);
 			recalculateCentroids(clusters);
+		}	
+		
+		// Show figures
+		System.out.println(nIter + " iterations executed");
+		for (int i = 0; i < clusters.size(); i++) {
+			System.out.println("Cluster " + (i+1) + ": "
+					+ clusters.get(i).getPoints().size() + " points");
 		}
-
+		
 		return clusters;
 	}
 
@@ -82,7 +95,7 @@ public class KMeans {
 			float[] features = new float[ds.nFeatures()];
 
 			for (int f = 0; f < ds.nFeatures(); f++) {
-				if (!ds.hasMissedValues(i)) {
+				if (!ds.hasMissedValues(f)) {
 					features[f] = random.nextFloat() * (highest[f] - lowests[f])
 							+ lowests[f];
 				} else {
@@ -110,7 +123,7 @@ public class KMeans {
 	 */
 	private boolean isFinished(List<Cluster> clusters) {
 		for (Cluster cluster : clusters) {
-			if (!cluster.isCompleted()) {
+			if (!cluster.isFinished()) {
 				return false;
 			}
 		}
@@ -137,11 +150,12 @@ public class KMeans {
 	private void assignPoints(List<Cluster> clusters) {
 		// Get the closest cluster for each point
 		for (Point p : ds.getPoints()) {
-			Cluster closest = clusters.get(0);
+			Cluster closest = clusters.get(0); // Choose an initial cluster
 			Double minimumDistance = Double.MAX_VALUE;
 			for (Cluster c : clusters) {
-				// Euclidian distance between the point and the centroid
-				Double distance = p.euclidianDistance(ds, c.getCentroid());
+				// Squared Euclidian distance between the point and the centroid
+				Double distance = p.squaredEuclidianDistance(ds,
+						c.getCentroid());
 				if (minimumDistance > distance) {
 					minimumDistance = distance;
 					closest = c;
@@ -155,14 +169,15 @@ public class KMeans {
 		}
 
 		logger.debug("Points assigned");
-		for (Cluster c : clusters) {
-			logger.debug(c.toString());
+		for (int i = 0; i < clusters.size(); i++) {
+			logger.debug("Cluster " + (i+1) + ": "
+					+ clusters.get(i).getPoints().size() + " points.");
 		}
 	}
 
 	/**
-	 * Recalculate the centroids of each cluster taking the mean value of each
-	 * feature.
+	 * Recalculate the centroids of each cluster taking as a new centroid a
+	 * point with the mean value of each feature.
 	 * 
 	 * @param clusters
 	 */
@@ -172,7 +187,7 @@ public class KMeans {
 		for (Cluster c : clusters) {
 			// Is the cluster has no points, the centroid is the same
 			if (c.isEmpty()) {
-				c.setCompleted(true);
+				c.setFinished(true);
 				logger.debug("The same (empty)");
 				continue;
 			}
@@ -183,9 +198,13 @@ public class KMeans {
 			for (Point p : c.getPoints()) {
 				for (int f = 0; f < ds.nFeatures(); f++) {
 					if (!ds.hasMissedValues(f)) {
-						meanFeatures[f] += ((p.getValue(f) - meanFeatures[f])
-								/ c.nPoints());
+						meanFeatures[f] += p.getValue(f);
 					}
+				}
+			}		
+			for (int f = 0; f < ds.nFeatures(); f++) {
+				if (!ds.hasMissedValues(f)) {
+					meanFeatures[f] /= c.nPoints();
 				}
 			}
 
@@ -194,7 +213,7 @@ public class KMeans {
 			// If the new centroid is the same as the previois centroid, we are
 			// finished with this cluster. If not, the new centroid is setted
 			if (newCentroid.equals(ds, c.getCentroid())) {
-				c.setCompleted(true);
+				c.setFinished(true);
 				logger.debug("The same");
 			} else {
 				c.setCentroid(newCentroid);
