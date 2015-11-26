@@ -28,7 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SpinnerNumberModel;
 
 /**
- * Graphic interface
+ * Graphic interface.
  */
 public class GUI extends JFrame {
 
@@ -49,7 +49,9 @@ public class GUI extends JFrame {
 	private JPanel contentPane;
 	private JButton btnOpenIncompleteDS;
 	private JButton btnOutput;
-	private JFileChooser fc;
+	private JFileChooser fc1;
+	private JFileChooser fc2;
+	private JFileChooser fc3;
 	private JTextField originalDSinput;
 	private JTextField outputInput;
 	private JTextField incompleteDSinput;
@@ -61,6 +63,9 @@ public class GUI extends JFrame {
 
 	/**
 	 * Launch the application with GUI.
+	 *
+	 * @param args
+	 *            arguments (none)
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -85,8 +90,11 @@ public class GUI extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 445, 433);
 
-		String desktop = (System.getProperty("user.home") + "\\Desktop").replace("\\", "/");
-		fc = new JFileChooser(desktop);
+		String desktop = (System.getProperty("user.home") + "\\Desktop")
+				.replace("\\", "/");
+		fc1 = new JFileChooser(desktop);
+		fc2 = new JFileChooser(desktop);
+		fc3 = new JFileChooser(desktop);
 
 		// Data set with missed values
 		JLabel lblIncompleteDSinput = new JLabel(
@@ -104,15 +112,16 @@ public class GUI extends JFrame {
 		btnOpenIncompleteDS.setBounds(224, 25, 70, 20);
 		btnOpenIncompleteDS.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fc1.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
 						"CSV files", "csv");
-				fc.setFileFilter(filter);
-				fc.setDialogTitle("Select data set");
-				int result = fc.showSaveDialog(GUI.this);
+				fc1.setFileFilter(filter);
+				fc1.setDialogTitle("Select data set");
+				int result = fc1.showSaveDialog(GUI.this);
 				if (result == JFileChooser.APPROVE_OPTION) {
-					incompleteDS = fc.getSelectedFile();
-					incompleteDSinput.setText(incompleteDS.toString().replace("\\", "/"));
+					incompleteDS = fc1.getSelectedFile();
+					incompleteDSinput.setText(
+							incompleteDS.toString().replace("\\", "/"));
 				}
 			}
 		});
@@ -132,11 +141,11 @@ public class GUI extends JFrame {
 		btnOutput.setBounds(224, 74, 70, 20);
 		btnOutput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				fc.setDialogTitle("Select data set");
-				int result = fc.showSaveDialog(GUI.this);
+				fc2.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				fc2.setDialogTitle("Select data set");
+				int result = fc2.showSaveDialog(GUI.this);
 				if (result == JFileChooser.APPROVE_OPTION) {
-					output = fc.getSelectedFile();
+					output = fc2.getSelectedFile();
 					outputInput.setText(output.toString().replace("\\", "/"));
 				}
 			}
@@ -173,7 +182,7 @@ public class GUI extends JFrame {
 		scrollPane.setViewportView(messagesArea);
 
 		mc = new MessageConsole(messagesArea);
-		mc.redirectOut(null, System.out); // Show messages in both consoles
+		mc.redirectOut();
 		mc.redirectErr(Color.RED, null);
 
 		JSeparator separator = new JSeparator();
@@ -193,15 +202,16 @@ public class GUI extends JFrame {
 		btnOriginalDS = new JButton("Select");
 		btnOriginalDS.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fc3.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
 						"CSV files", "csv");
-				fc.setFileFilter(filter);
-				fc.setDialogTitle("Select original data set");
-				int result = fc.showSaveDialog(GUI.this);
+				fc3.setFileFilter(filter);
+				fc3.setDialogTitle("Select original data set");
+				int result = fc3.showSaveDialog(GUI.this);
 				if (result == JFileChooser.APPROVE_OPTION) {
-					originalDS = fc.getSelectedFile();
-					originalDSinput.setText(originalDS.toString().replace("\\", "/"));
+					originalDS = fc3.getSelectedFile();
+					originalDSinput
+							.setText(originalDS.toString().replace("\\", "/"));
 				}
 			}
 		});
@@ -237,7 +247,7 @@ public class GUI extends JFrame {
 	}
 
 	/**
-	 * Execute the proccesing of the data set.
+	 * Run the aplication with the data sets selected in the GUI.
 	 */
 	private void run() {
 		messagesArea.setText("");
@@ -250,16 +260,18 @@ public class GUI extends JFrame {
 				System.err.println("ERROR: program not configured");
 			}
 		} catch (IOException e) {
-			System.err.println("ERROR: at processing data set. " + e.getMessage());
+			System.err.println(
+					"ERROR: at processing data set. " + e.getMessage());
 		} catch (NumberFormatException e) {
 			System.err.println("ERROR: wrong value. " + e.getMessage());
-		} catch (Exception e) { 
-			System.err.println("ERROR");
+		} catch (Exception e) {
+			System.err.println("ERROR. " + e.getMessage());
 		}
 	}
 
 	/**
-	 * Compare the original data set with the output data set.
+	 * Compare the original data set with the output data set and show the
+	 * results in the GUI.
 	 */
 	private void compare() {
 		messagesArea.setText("");
@@ -271,12 +283,13 @@ public class GUI extends JFrame {
 				System.err.println("ERROR: program not configured");
 			}
 		} catch (IOException e) {
-			System.err.println("ERROR: at processing data set. " + e.getMessage());
+			System.err.println(
+					"ERROR: at processing data set. " + e.getMessage());
 		} catch (NumberFormatException e) {
 			System.err.println("ERROR: wrong value. " + e.getMessage());
 			e.printStackTrace();
-		} catch (Exception e) { 
-			System.err.println("ERROR");
+		} catch (Exception e) {
+			System.err.println("ERROR. " + e.getMessage());
 		}
 	}
 }

@@ -28,6 +28,14 @@ public class Cluster {
 	/** List of features that contain missed values in the cluster */
 	private Set<Integer> missedFeatures;
 
+	/**
+	 * Create a new cluster.
+	 * 
+	 * @param ds
+	 *            data set
+	 * @param centroid
+	 *            centroid point
+	 */
 	public Cluster(DataSet ds, Point centroid) {
 		this.ds = ds;
 		points = new HashSet<Point>();
@@ -37,6 +45,8 @@ public class Cluster {
 	}
 
 	/**
+	 * Get centroid of the cluster.
+	 * 
 	 * @return centroid point
 	 */
 	public Point getCentroid() {
@@ -44,15 +54,18 @@ public class Cluster {
 	}
 
 	/**
-	 * Set centroid of the cluster
+	 * Set centroid of the cluster.
 	 * 
 	 * @param centroid
+	 *            centroid point of the cluster
 	 */
 	public void setCentroid(Point centroid) {
 		this.centroid = centroid;
 	}
 
 	/**
+	 * Get points of the cluster.
+	 * 
 	 * @return list with the points belonging to the cluster
 	 */
 	public Set<Point> getPoints() {
@@ -60,7 +73,7 @@ public class Cluster {
 	}
 
 	/**
-	 * Add point to the cluster
+	 * Add point to the cluster.
 	 * 
 	 * @param p
 	 *            point
@@ -72,7 +85,8 @@ public class Cluster {
 	/**
 	 * Register a feature as having misssed valures.
 	 * 
-	 * @param missedFeature
+	 * @param missedFeatures
+	 *            set with the features with missed values
 	 */
 	public void addMissedFeatures(Set<Integer> missedFeatures) {
 		if (missedFeatures != null) {
@@ -81,6 +95,8 @@ public class Cluster {
 	}
 
 	/**
+	 * Get features with missed values of the cluster.
+	 * 
 	 * @return set with the features that have missed values
 	 */
 	public Set<Integer> getMissedFeatures() {
@@ -88,6 +104,8 @@ public class Cluster {
 	}
 
 	/**
+	 * Answer if the cluster has missed values or not.
+	 * 
 	 * @return true if the cluster contains some feature with missed values
 	 */
 	public boolean hasMissedFeatures() {
@@ -95,6 +113,8 @@ public class Cluster {
 	}
 
 	/**
+	 * If the cluster is finnished for the k-means algorithm.
+	 * 
 	 * @return true if the cluster centroid doesn't change it two consecutive
 	 *         iterations.
 	 */
@@ -106,12 +126,15 @@ public class Cluster {
 	 * Set processing status.
 	 * 
 	 * @param status
+	 *            true if finished
 	 */
 	public void setFinished(boolean status) {
 		this.sameCentroid = status;
 	}
 
 	/**
+	 * Number of points.
+	 * 
 	 * @return number of points the cluster has.
 	 */
 	public int nPoints() {
@@ -119,6 +142,8 @@ public class Cluster {
 	}
 
 	/**
+	 * Answer if the cluster has no points.
+	 * 
 	 * @return true if the cluster doesn't have any point
 	 */
 	public boolean isEmpty() {

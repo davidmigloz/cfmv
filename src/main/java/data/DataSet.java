@@ -19,8 +19,9 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 /**
- * A dataset is a collection of data points. This class performs all the operation related with the data set. It
- * parse the CSV file, create Point objets, standarize/destandarize points, etc.
+ * A dataset is a collection of data points. This class performs all the
+ * operation related with the data set. It parse the CSV file, create Point
+ * objets, standarize/destandarize points, etc.
  */
 public class DataSet {
 	/** Points of the data set */
@@ -42,6 +43,16 @@ public class DataSet {
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
 
+	/**
+	 * Create a new data set.
+	 * 
+	 * @param incompleteDS
+	 *            CSV file with the data set with missed values
+	 * @throws NumberFormatException
+	 *             format of the data set not valid
+	 * @throws IOException
+	 *             error at parsing CSV files
+	 */
 	public DataSet(File incompleteDS)
 			throws NumberFormatException, IOException {
 		points = new ArrayList<Point>();
@@ -49,6 +60,8 @@ public class DataSet {
 	}
 
 	/**
+	 * Get points.
+	 * 
 	 * @return list of data set's points
 	 */
 	public List<Point> getPoints() {
@@ -56,6 +69,8 @@ public class DataSet {
 	}
 
 	/**
+	 * Number of features.
+	 * 
 	 * @return number of features of each point
 	 */
 	public int nFeatures() {
@@ -63,6 +78,8 @@ public class DataSet {
 	}
 
 	/**
+	 * Answer if the feature has missed values.
+	 * 
 	 * @param f
 	 *            feature
 	 * @return true if that feature has some missed value
@@ -72,6 +89,10 @@ public class DataSet {
 	}
 
 	/**
+	 * Get type of a feature.
+	 * 
+	 * @param f
+	 *            feature
 	 * @return array with the type of each feature
 	 */
 	public String getType(int f) {
@@ -90,7 +111,7 @@ public class DataSet {
 	 */
 	private void processData(File incompleteDS)
 			throws NumberFormatException, IOException {
-		System.out.println(">Processing data set file...");
+		System.out.println("> Processing data set file...");
 
 		String[] point; // Array of strings with the features of a point
 		float[] sum; // Sum of all the values of each feature
@@ -121,6 +142,11 @@ public class DataSet {
 
 			// Parse CSV dataset
 			while ((point = reader.readNext()) != null) {
+				if (point.length != headers.length) {
+					throw new IOException(
+							"Inconsistent data set. Row " + num + 3);
+				}
+
 				float[] features = new float[point.length];
 				Set<Integer> missedFeatures = new HashSet<Integer>(
 						point.length / 2);
@@ -148,16 +174,16 @@ public class DataSet {
 		}
 
 		// Show figures about missed values
-		System.out.println("Missed values: " + nMissedValues);
+		System.out.println("      Missed values: " + nMissedValues);
 		List<String> missedFeatures = new ArrayList<String>();
 		for (int i = 0; i < incompleteFeature.length; i++) {
 			if (incompleteFeature[i]) {
 				missedFeatures.add(headers[i]);
 			}
 		}
-		System.out.println("In " + missedFeatures.size() + " features out of "
-				+ incompleteFeature.length + ":");
-		System.out.println(missedFeatures.toString());
+		System.out.println("      In " + missedFeatures.size()
+				+ " features out of " + incompleteFeature.length + ":");
+		System.out.println("      " + missedFeatures.toString());
 
 		// Calculate mean
 		for (int i = 0; i < sum.length; i++) {
@@ -182,7 +208,7 @@ public class DataSet {
 				"Standar deviation:\n" + Arrays.toString(standardDeviation));
 		logger.debug("Features with missed values\n"
 				+ Arrays.toString(incompleteFeature));
-		for (int i = 0; i < 10; i++){ // Show 10 first point
+		for (int i = 0; i < 10; i++) { // Show 10 first point
 			logger.debug(points.get(i).toString());
 		}
 		logger.debug("...");
@@ -194,15 +220,15 @@ public class DataSet {
 	 * @param output
 	 *            path where to export
 	 * @throws IOException
+	 *             error at parsing CSV files
 	 */
 	public void exportDataSet(File output) throws IOException {
-		System.out.println(">Exporting data set...");
+		System.out.println("> Exporting data set...");
 
 		final char SEPARATOR = ','; // Separator of the values of the CSV file
 		final char ESCAPE_CHAR = '"'; // Escape character in the CSV file
-		CSVWriter writer = new CSVWriter(
-				new FileWriter(output + "/output.csv"), SEPARATOR,
-				ESCAPE_CHAR);
+		CSVWriter writer = new CSVWriter(new FileWriter(output + "/output.csv"),
+				SEPARATOR, ESCAPE_CHAR);
 
 		try {
 			writer.writeNext(headers);
@@ -232,7 +258,7 @@ public class DataSet {
 	 * z = (x - μ) / σ
 	 */
 	public void standardizePoints() {
-		System.out.println(">Standarizing points...");
+		System.out.println("> Standarizing points...");
 
 		for (Point p : points) {
 			float[] features = p.getValues();
@@ -242,7 +268,7 @@ public class DataSet {
 		}
 
 		logger.debug("Points standarized");
-		for (int i = 0; i < 10; i++){ // Show 10 first point
+		for (int i = 0; i < 10; i++) { // Show 10 first point
 			logger.debug(points.get(i).toString());
 		}
 		logger.debug("...");
@@ -255,7 +281,7 @@ public class DataSet {
 	 * x = μ + zσ
 	 */
 	public void destandardizePoints() {
-		System.out.println(">Destandarizing points...");
+		System.out.println("> Destandarizing points...");
 
 		for (Point p : points) {
 			float[] features = p.getValues();
@@ -267,7 +293,7 @@ public class DataSet {
 		}
 
 		logger.debug("Points destandarized");
-		for (int i = 0; i < 10; i++){ // Show 10 first point
+		for (int i = 0; i < 10; i++) { // Show 10 first point
 			logger.debug(points.get(i).toString());
 		}
 		logger.debug("...");

@@ -25,16 +25,25 @@ public class Finder {
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(Finder.class);
 
+	/**
+	 * Finder constructor.
+	 * 
+	 * @param ds
+	 *            data set
+	 * @param clusters
+	 *            list of clusters
+	 */
 	public Finder(DataSet ds, List<Cluster> clusters) {
 		this.ds = ds;
 		this.clusters = clusters;
 	}
 
 	/**
-	 * Replace missed values by the mean of the feature in the corresponding cluster.
+	 * Replace missed values by the mean of the feature in the corresponding
+	 * cluster.
 	 */
 	public void replaceMissedValues() {
-		System.out.println(">Replacing missed values...");
+		System.out.println("> Replacing missed values...");
 
 		for (Cluster c : clusters) {
 			logger.debug("Cluster with " + c.nPoints() + " points. MV: "

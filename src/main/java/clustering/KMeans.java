@@ -25,6 +25,12 @@ public class KMeans {
 	/** Logger */
 	private static final Logger logger = LoggerFactory.getLogger(KMeans.class);
 
+	/**
+	 * Create new instance of k-means algorithm.
+	 * 
+	 * @param ds
+	 *            data set
+	 */
 	public KMeans(DataSet ds) {
 		this.ds = ds;
 	}
@@ -38,7 +44,7 @@ public class KMeans {
 	 */
 	public List<Cluster> run(int k) {
 		this.k = k;
-		System.out.println(">Running " + k + "-means...");
+		System.out.println("> Running " + k + "-means...");
 
 		List<Cluster> clusters = chooseCentroids();
 
@@ -49,15 +55,15 @@ public class KMeans {
 			cleanClusters(clusters);
 			assignPoints(clusters);
 			recalculateCentroids(clusters);
-		}	
-		
+		}
+
 		// Show figures
-		System.out.println(nIter + " iterations executed");
+		System.out.println("      " + nIter + " iterations executed");
 		for (int i = 0; i < clusters.size(); i++) {
-			System.out.println("Cluster " + (i+1) + ": "
+			System.out.println("      ·Cluster " + (i + 1) + ": "
 					+ clusters.get(i).getPoints().size() + " points");
 		}
-		
+
 		return clusters;
 	}
 
@@ -170,7 +176,7 @@ public class KMeans {
 
 		logger.debug("Points assigned");
 		for (int i = 0; i < clusters.size(); i++) {
-			logger.debug("Cluster " + (i+1) + ": "
+			logger.debug("Cluster " + (i + 1) + ": "
 					+ clusters.get(i).getPoints().size() + " points.");
 		}
 	}
@@ -201,7 +207,7 @@ public class KMeans {
 						meanFeatures[f] += p.getValue(f);
 					}
 				}
-			}		
+			}
 			for (int f = 0; f < ds.nFeatures(); f++) {
 				if (!ds.hasMissedValues(f)) {
 					meanFeatures[f] /= c.nPoints();

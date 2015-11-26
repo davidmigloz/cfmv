@@ -15,6 +15,19 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class Comparator {
 
+	/**
+	 * Compare the differences between the original data set and the output data
+	 * set with the missed values filled.
+	 * 
+	 * @param original
+	 *            original data set
+	 * @param incomplete
+	 *            incomplete data set
+	 * @param output
+	 *            data set resulting of the execution of the aplication
+	 * @throws IOException
+	 *             error at parsing CSV files
+	 */
 	public static void compare(File original, File incomplete, File output)
 			throws IOException {
 		final char SEPARATOR = ','; // Separator of the values of the CSV file
@@ -27,11 +40,12 @@ public class Comparator {
 		CSVReader readerIncomplete = new CSVReader(new FileReader(incomplete),
 				SEPARATOR, ESCAPE_CHAR, FIRST_LINE);
 		CSVReader readerOutput = new CSVReader(
-				new FileReader(output + "\\output.csv"), SEPARATOR, ESCAPE_CHAR,
+				new FileReader(output + "/output.csv"), SEPARATOR, ESCAPE_CHAR,
 				FIRST_LINE);
 
 		int nMissedValues = 0;
-		Map<String,String[]> wrongValues = new HashMap<String,String[]>(); // original value -> filled value
+		// original value -> [feature, filled value]
+		Map<String, String[]> wrongValues = new HashMap<String, String[]>();
 		float[] highests; // Highest value of each feature
 		float[] lowests; // Lowest value of each feature
 
@@ -44,12 +58,12 @@ public class Comparator {
 			lineOriginal = readerOriginal.readNext();
 			lineIncomplete = readerIncomplete.readNext();
 			lineOutput = readerOutput.readNext();
-			
+
 			highests = new float[lineOriginal.length];
 			lowests = new float[lineOriginal.length];
 			Arrays.fill(highests, Float.NEGATIVE_INFINITY);
 			Arrays.fill(lowests, Float.POSITIVE_INFINITY);
-			
+
 			while ((lineOriginal = readerOriginal.readNext()) != null) {
 				lineIncomplete = readerIncomplete.readNext();
 				lineOutput = readerOutput.readNext();
@@ -57,15 +71,20 @@ public class Comparator {
 				for (int f = 0; f < lineOriginal.length; f++) {
 					// Calculate heighest and lowest values of each feature
 					Float val = Float.parseFloat(lineOriginal[f]);
-					highests[f] = highests[f] < val ? val : highests[f];		
-					lowests[f] = lowests[f] > val ? val : lowests[f];	
-					
-					if (!lineOriginal[f].equals(lineIncomplete[f])) { // Compare original - input
+					highests[f] = highests[f] < val ? val : highests[f];
+					lowests[f] = lowests[f] > val ? val : lowests[f];
+
+					// Look for missed values
+					if (lineIncomplete[f].equals("")) {
 						nMissedValues++;
-					}
-					if (!lineOriginal[f].equals(lineOutput[f])) { // Compare original - output
-						String[] data = {Integer.toString(f), lineOutput[f]}; // {Feature, output value}
-						wrongValues.put(lineOriginal[f], data);
+						// Compare original - output
+						if (!lineOriginal[f].equals(lineOutput[f])) {
+							// Wrong value
+							// [feature, output value]
+							String[] data = { Integer.toString(f),
+									lineOutput[f] };
+							wrongValues.put(lineOriginal[f], data);
+						}
 					}
 				}
 			}
@@ -74,30 +93,39 @@ public class Comparator {
 			readerIncomplete.close();
 			readerOutput.close();
 		}
-		
+
+		// Distance between highest and lowest value of each feature
 		float[] distances = new float[highests.length];
-		for(int i = 0; i < highests.length; i++){
-			distances[i] = Math.abs(highests[i]-lowests[i]);
-		}
-		
-		float averrageRelDistance = 0; // Average relative distance
-		for(String originalV : wrongValues.keySet()){
-			int feature = Integer.parseInt(wrongValues.get(originalV)[0]);
-			String outputV = wrongValues.get(originalV)[1];
-			
-			int distance = Math.abs(Integer.parseInt(originalV)-Integer.parseInt(outputV));
-			
-			float relDistance = (((float) distance) / distances[feature]) * 100;
-			System.out.print(originalV + " != " + outputV);
-			System.out.printf(" | RD: %.2f%%\n", relDistance);
-			averrageRelDistance += relDistance;
+		for (int i = 0; i < highests.length; i++) {
+			distances[i] = Math.abs(highests[i] - lowests[i]);
 		}
 
-		averrageRelDistance /= wrongValues.size();
+		// Average relative ereror
+		float averrageRelError = 0;
+		System.out.println(">Inaccuracies (original≠output):");
+		for (String originalV : wrongValues.keySet()) {
+			int feature = Integer.parseInt(wrongValues.get(originalV)[0]);
+			String outputV = wrongValues.get(originalV)[1];
+
+			int distance = Math.abs(
+					Integer.parseInt(originalV) - Integer.parseInt(outputV));
+
+			// Relative error (distance from inferred point to real point
+			// divided by distance between the lowest and hihgest value of the
+			// feature).
+			float relError = (((float) distance) / distances[feature]) * 100;
+			averrageRelError += relError;
+
+			System.out.print("    " + originalV + " ≠ " + outputV);
+			System.out.printf(" | RE: %.2f%%\n", relError);
+		}
+		averrageRelError /= wrongValues.size();
+
 		System.out.println("-----------------------------------------------");
-		System.out.print("Exact hits: " + (nMissedValues-wrongValues.size()) + "/" + nMissedValues);
+		System.out.print("Exact hits: " + (nMissedValues - wrongValues.size())
+				+ "/" + nMissedValues);
 		System.out.printf(" (%.2f%%)\n",
 				(1 - (((float) wrongValues.size()) / nMissedValues)) * 100);
-		System.out.printf("Average relative distance : %.2f%%", averrageRelDistance);
+		System.out.printf("Average relative error: %.2f%%", averrageRelError);
 	}
 }

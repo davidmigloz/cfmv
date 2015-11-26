@@ -10,26 +10,37 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
-/*
- *  Create a simple console to display text messages.
+/**
+ * Create a simple console to display text messages.
  *
- *  Source: https://tips4java.wordpress.com/2008/11/08/message-console/
+ * Source: https://tips4java.wordpress.com/2008/11/08/message-console/
  */
 public class MessageConsole {
 	private JTextComponent textComponent;
 	private Document document;
 	private boolean isAppend;
 
+	/**
+	 * New GUI console.
+	 * 
+	 * @param textComponent
+	 *            textComponent
+	 */
 	public MessageConsole(JTextComponent textComponent) {
 		this(textComponent, true);
 	}
 
-	/*
+	/**
 	 * Use the text component specified as a simply console to display text
 	 * messages.
 	 *
 	 * The messages can either be appended to the end of the console or inserted
 	 * as the first line of the console.
+	 * 
+	 * @param textComponent
+	 *            textComponent
+	 * @param isAppend
+	 *            isAppend
 	 */
 	public MessageConsole(JTextComponent textComponent, boolean isAppend) {
 		this.textComponent = textComponent;
@@ -38,7 +49,7 @@ public class MessageConsole {
 		textComponent.setEditable(false);
 	}
 
-	/*
+	/**
 	 * Redirect the output from the standard output to the console using the
 	 * default text color and null PrintStream
 	 */
@@ -46,11 +57,16 @@ public class MessageConsole {
 		redirectOut(null, null);
 	}
 
-	/*
+	/**
 	 * Redirect the output from the standard output to the console using the
 	 * specified color and PrintStream. When a PrintStream is specified the
 	 * message will be added to the Document before it is also written to the
 	 * PrintStream.
+	 * 
+	 * @param textColor
+	 *            textColor
+	 * @param printStream
+	 *            printStream
 	 */
 	public void redirectOut(Color textColor, PrintStream printStream) {
 		ConsoleOutputStream cos = new ConsoleOutputStream(textColor,
@@ -58,7 +74,7 @@ public class MessageConsole {
 		System.setOut(new PrintStream(cos, true));
 	}
 
-	/*
+	/**
 	 * Redirect the output from the standard error to the console using the
 	 * default text color and null PrintStream
 	 */
@@ -66,11 +82,16 @@ public class MessageConsole {
 		redirectErr(null, null);
 	}
 
-	/*
+	/**
 	 * Redirect the output from the standard error to the console using the
 	 * specified color and PrintStream. When a PrintStream is specified the
 	 * message will be added to the Document before it is also written to the
 	 * PrintStream.
+	 * 
+	 * @param textColor
+	 *            textColor
+	 * @param printStream
+	 *            printStream
 	 */
 	public void redirectErr(Color textColor, PrintStream printStream) {
 		ConsoleOutputStream cos = new ConsoleOutputStream(textColor,
@@ -78,7 +99,7 @@ public class MessageConsole {
 		System.setErr(new PrintStream(cos, true));
 	}
 
-	/*
+	/**
 	 * Class to intercept output from a PrintStream and add it to a Document.
 	 * The output can optionally be redirected to a different PrintStream. The
 	 * text displayed in the Document can be color coded to indicate the output
@@ -91,7 +112,7 @@ public class MessageConsole {
 		private StringBuffer buffer = new StringBuffer(80);
 		private boolean isFirstLine;
 
-		/*
+		/**
 		 * Specify the option text color and PrintStream
 		 */
 		public ConsoleOutputStream(Color textColor, PrintStream printStream) {
@@ -106,7 +127,7 @@ public class MessageConsole {
 				isFirstLine = true;
 		}
 
-		/*
+		/**
 		 * Override this method to intercept the output text. Each line of text
 		 * output will actually involve invoking this method twice:
 		 *
@@ -129,11 +150,14 @@ public class MessageConsole {
 			reset();
 		}
 
-		/*
+		/**
 		 * We don't want to have blank lines in the Document. The first line
 		 * added will simply be the message. For additional lines it will be:
 		 *
 		 * newLine + message
+		 * 
+		 * @param message
+		 *            message
 		 */
 		private void handleAppend(String message) {
 			// This check is needed in case the text in the Document has been
@@ -152,11 +176,14 @@ public class MessageConsole {
 
 		}
 
-		/*
+		/**
 		 * We don't want to merge the new message with the existing message so
 		 * the line will be inserted as:
 		 *
 		 * message + newLine
+		 * 
+		 * @param message
+		 *            message
 		 */
 		private void handleInsert(String message) {
 			buffer.append(message);
@@ -166,7 +193,7 @@ public class MessageConsole {
 			}
 		}
 
-		/*
+		/**
 		 * The message and the newLine have been added to the buffer in the
 		 * appropriate order so we can now update the Document and send the text
 		 * to the optional PrintStream.

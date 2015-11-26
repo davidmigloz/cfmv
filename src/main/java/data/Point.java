@@ -19,12 +19,22 @@ public class Point {
 		this.values = values;
 	}
 
+	/**
+	 * Create a new point.
+	 * 
+	 * @param values
+	 *            values of the features
+	 * @param missedFeatures
+	 *            features with no value
+	 */
 	public Point(float[] values, Set<Integer> missedFeatures) {
 		this.values = values;
 		this.missedFeatures = missedFeatures;
 	}
 
 	/**
+	 * Get value of a feature of the point.
+	 * 
 	 * @param feaure
 	 *            position of the feature (starting from 0)
 	 * @return value of the feature
@@ -34,6 +44,8 @@ public class Point {
 	}
 
 	/**
+	 * Get the values of all the features of the point.
+	 * 
 	 * @return array with all the values of the features of the point
 	 */
 	public float[] getValues() {
@@ -46,6 +58,7 @@ public class Point {
 	 * @param f
 	 *            feature
 	 * @param value
+	 *            value of the feature
 	 */
 	public void setValue(int f, float value) {
 		this.values[f] = value;
@@ -62,6 +75,8 @@ public class Point {
 	}
 
 	/**
+	 * Get the missed features of the point.
+	 * 
 	 * @return a map with the missed features
 	 */
 	public Set<Integer> getMissedFeatures() {
@@ -80,6 +95,8 @@ public class Point {
 	}
 
 	/**
+	 * Get number of features.
+	 * 
 	 * @return number of features that the point has
 	 */
 	public int nFeatures() {
