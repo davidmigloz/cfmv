@@ -102,7 +102,7 @@ public class Comparator {
 
 		// Average relative ereror
 		float averrageRelError = 0;
-		System.out.println(">Inaccuracies (original≠output):");
+		System.out.println("> Inaccuracies (output != original):");
 		for (String originalV : wrongValues.keySet()) {
 			int feature = Integer.parseInt(wrongValues.get(originalV)[0]);
 			String outputV = wrongValues.get(originalV)[1];
@@ -116,16 +116,16 @@ public class Comparator {
 			float relError = (((float) distance) / distances[feature]) * 100;
 			averrageRelError += relError;
 
-			System.out.print("    " + originalV + " ≠ " + outputV);
+			System.out.print("    " + outputV + " != " + originalV);
 			System.out.printf(" | RE: %.2f%%\n", relError);
 		}
 		averrageRelError /= wrongValues.size();
 
 		System.out.println("-----------------------------------------------");
-		System.out.print("Exact hits: " + (nMissedValues - wrongValues.size())
+		System.out.print("> Exact hits: " + (nMissedValues - wrongValues.size())
 				+ "/" + nMissedValues);
 		System.out.printf(" (%.2f%%)\n",
 				(1 - (((float) wrongValues.size()) / nMissedValues)) * 100);
-		System.out.printf("Average relative error: %.2f%%", averrageRelError);
+		System.out.printf("> Average relative error: %.2f%%", averrageRelError);
 	}
 }
