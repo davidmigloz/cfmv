@@ -144,6 +144,6 @@ public class Point {
 
 	@Override
 	public String toString() {
-		return "#P:\t" + Arrays.toString(values);
+		return "#P:" + Arrays.toString(values);
 	}
 }

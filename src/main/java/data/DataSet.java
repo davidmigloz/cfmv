@@ -208,10 +208,9 @@ public class DataSet {
 				"Standar deviation:\n" + Arrays.toString(standardDeviation));
 		logger.debug("Features with missed values\n"
 				+ Arrays.toString(incompleteFeature));
-		for (int i = 0; i < 10; i++) { // Show 10 first point
+		for (int i = 0; i < 10 && i < points.size(); i++) { // Show 10 first point
 			logger.debug(points.get(i).toString());
 		}
-		logger.debug("...");
 	}
 
 	/**
@@ -268,10 +267,9 @@ public class DataSet {
 		}
 
 		logger.debug("Points standarized");
-		for (int i = 0; i < 10; i++) { // Show 10 first point
+		for (int i = 0; i < 10 && i < points.size(); i++) { // Show 10 first point
 			logger.debug(points.get(i).toString());
 		}
-		logger.debug("...");
 	}
 
 	/**
@@ -293,10 +291,9 @@ public class DataSet {
 		}
 
 		logger.debug("Points destandarized");
-		for (int i = 0; i < 10; i++) { // Show 10 first point
+		for (int i = 0; i < 10 && i < points.size(); i++) { // Show 10 first point
 			logger.debug(points.get(i).toString());
 		}
-		logger.debug("...");
 	}
 
 	/**

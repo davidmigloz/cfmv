@@ -119,8 +119,11 @@ public class Comparator {
 			System.out.print("    " + outputV + " != " + originalV);
 			System.out.printf(" | RE: %.2f%%\n", relError);
 		}
-		averrageRelError /= wrongValues.size();
-
+		if(wrongValues.isEmpty()){
+			System.out.println("    None");
+		} else {
+			averrageRelError /= wrongValues.size();
+		}
 		System.out.println("-----------------------------------------------");
 		System.out.print("> Exact hits: " + (nMissedValues - wrongValues.size())
 				+ "/" + nMissedValues);

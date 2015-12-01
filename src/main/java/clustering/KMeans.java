@@ -3,7 +3,6 @@ package clustering;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +67,8 @@ public class KMeans {
 	}
 
 	/**
-	 * Choose randoms centroids for the k clustes between the min. and max.
-	 * value of each feature.
+	 * Choose centroids for the k clustes uniformly distributed between the min.
+	 * and max. value of each feature.
 	 * 
 	 * @return k clusters each one with the centroid setted
 	 */
@@ -94,16 +93,15 @@ public class KMeans {
 			}
 		}
 
-		// Get k random centroids with random features between min. and max.
+		// Get k random centroids uniformly distributed between min. and max.
 		// values of each features
-		Random random = new Random();
 		for (int i = 0; i < k; i++) {
 			float[] features = new float[ds.nFeatures()];
 
 			for (int f = 0; f < ds.nFeatures(); f++) {
 				if (!ds.hasMissedValues(f)) {
-					features[f] = random.nextFloat() * (highest[f] - lowests[f])
-							+ lowests[f];
+					float step = (highest[f] - lowests[f]) / (float) k;
+					features[f] = lowests[f] + step / 2 + i * step;
 				} else {
 					features[f] = 0;
 				}
@@ -167,6 +165,8 @@ public class KMeans {
 					closest = c;
 				}
 			}
+			logger.debug(
+					p.toString() + " --> " + closest.getCentroid().toString());
 			// Add point to the closest cluster
 			closest.addPoint(p);
 			// Register in the cluster if the point has features with missed
@@ -191,7 +191,7 @@ public class KMeans {
 		logger.debug("New centroids:");
 
 		for (Cluster c : clusters) {
-			// Is the cluster has no points, the centroid is the same
+			// If the cluster has no points, the centroid is the same
 			if (c.isEmpty()) {
 				c.setFinished(true);
 				logger.debug("The same (empty)");

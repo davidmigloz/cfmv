@@ -170,7 +170,7 @@ public class Cluster {
 			}
 			str += "\n...";
 		} else {
-			str += "Empty";
+			str += " Empty";
 		}
 		return str;
 	}
