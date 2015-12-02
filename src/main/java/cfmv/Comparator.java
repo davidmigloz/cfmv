@@ -107,8 +107,8 @@ public class Comparator {
 			int feature = Integer.parseInt(wrongValues.get(originalV)[0]);
 			String outputV = wrongValues.get(originalV)[1];
 
-			int distance = Math.abs(
-					Integer.parseInt(originalV) - Integer.parseInt(outputV));
+			double distance = Math.abs(
+					Double.parseDouble(originalV) - Double.parseDouble(outputV));
 
 			// Relative error (distance from inferred point to real point
 			// divided by distance between the lowest and hihgest value of the
